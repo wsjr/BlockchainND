@@ -1,6 +1,6 @@
 # RESTful Web API with Node.js Framework
 
-This project is built using [ExpressJS]((http://expressjs.com/)) that serves as Web API on top of our private blockchain to submit and retrieve blockchain data.
+This project is built using [ExpressJS](http://expressjs.com/) that serves as Web API on top of our private blockchain to submit and retrieve blockchain data.
 
 ## Getting Started
 
