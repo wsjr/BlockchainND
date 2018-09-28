@@ -18,7 +18,7 @@ These instructions will get you a copy of the project up and running on your loc
 ```
 npm init
 ```
-- Install Express. Used as our web API framework. Ensure to provide --save flag to save dependency to our package.json
+- Install Express. Used as our web API framework. Make sure to provide **"--save"** flag to save dependency to our package.json
 
 ```
 npm install express --save
@@ -88,7 +88,7 @@ http://localhost:8000/block
 Post body
 ```
 {
-	"text": "Test Block 5"
+    "text": "Test Block 5"
 }
 ```
 
