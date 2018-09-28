@@ -66,6 +66,12 @@ Get block object specified by the blockheight. The response for the endpoint sho
 ```
 http://localhost:8000/block/[blockheight]
 ```
+Example:
+
+```
+http://localhost:8000/block/0
+```
+
 Returns
 ```
 {
@@ -81,6 +87,8 @@ Returns
 ____
 
 Post a new block with data payload option to add data to the block body. The block body should support a string of text. The response for the endpoint should provide block object in JSON format.
+
+Example:
 
 ```
 http://localhost:8000/block
