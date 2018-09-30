@@ -1,0 +1,17 @@
+{
+  "name": "hapi-app",
+  "version": "1.0.0",
+  "description": "This project is built using [ExpressJS](http://expressjs.com/) that serves as Web API on top of our private blockchain to submit and retrieve blockchain data.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "crypto-js": "^3.1.9-1",
+    "hapi": "^17.6.0",
+    "level": "^4.0.0"
+  }
+}
