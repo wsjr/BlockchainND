@@ -21,7 +21,7 @@ npm init
 - Install Express. Used as our web API framework. Make sure to provide **"--save"** flag to save dependency to our package.json
 
 ```
-npm install express --save
+npm install sails -g --save
 ```
 
 - Install crypto-js. Used for sha256 hashing.

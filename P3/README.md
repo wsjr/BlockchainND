@@ -1,6 +1,6 @@
 # RESTful Web API with Node.js Framework
 
-This project demonstrates builiding Web API on top of our private blockchain to submit and retrieve blockchain data using different frameworks
+This project demonstrates builiding Web API using different Node frameworks on top of our private blockchain to submit and retrieve blockchain data:
 
 - [Express](https://expressjs.com/)
 - [Hapi](https://hapijs.com/)
