@@ -61,7 +61,6 @@ server.route({
     method: 'POST',
     path: '/block',
     handler: (request, reply) => {
-        //return 'POST detected:' + request.payload.text;
         let oPromise = new Promise((resolve, reject) => {
             try {
                 let oBody = request.payload;
