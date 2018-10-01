@@ -51,12 +51,12 @@ sails lift
 If successful, it should display:
 
 ```
-info: Server lifted in `/Users/wenjo2/Dev/Udacity/BCND/P3/sails-app`
+info: Server lifted in `/XXX/YYY/ZZZ/sails-app`
 info: To shut down Sails, press <CTRL> + C at any time.
 info: Read more at https://sailsjs.com/support.
 
 debug: -------------------------------------------------------
-debug: :: Sun Sep 30 2018 21:08:30 GMT-0700 (PDT)
+debug: :: [Date]
 
 debug: Environment : development
 debug: Port        : 8000
