@@ -211,7 +211,7 @@ Returns
 ]
 ```
 
-**5. Get stars by blockchain hash**
+**5. Get star by blockchain hash**
 
 Example:
 
@@ -238,7 +238,32 @@ Returns
 ]
 ```
 
+**6. Get star by block height**
 
+Example:
+
+```
+http://localhost:8000/block/2
+```
+Returns
+```
+[
+    {
+        "hash": "a3d67cdfd2fd32c872d8c7cc9ebd399091bde2d48cb78a652826614b26be75e0",
+        "height": "2",
+        "body": {
+            "address": "TestWalletAddress1",
+            "star": {
+                "dec": "-26° 29' 24.9",
+                "ra": "16h 29m 1.0s",
+                "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
+            }
+        },
+        "time": "1539914820",
+        "previousBlockHash": "e9cc5f2713b4c4c3f045caac555acf56c02ae4861b7e62438273537244fb6c66"
+    }
+]
+```
 
 
 ## Built With
