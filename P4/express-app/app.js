@@ -52,55 +52,52 @@ function getTimestamp(sAddress) {
  *  - validationWindow: Time remaining since address was validated.
  */
 function getValidationPayload(sAddress, sTimestamp) {
-	let oPayload = null;
-	if (!!sAddress && !!sTimestamp) {
-   	let nValidationWindow = oMempool.getValidationWindowInSeconds(sTimestamp);
-   	let sMessage = sAddress + ":" + sTimestamp + ":starRegistry";
+   let oPayload = null;
+   if (!!sAddress && !!sTimestamp) {
+      let nValidationWindow = oMempool.getValidationWindowInSeconds(sTimestamp);
+      let sMessage = sAddress + ":" + sTimestamp + ":starRegistry";
 
-   	oPayload = {
-   		address: sAddress,
-   		requestTimestamp: sTimestamp,
-   		message: sMessage,
-   		validationWindow: nValidationWindow
-   	};
-	}
-	return oPayload;
+      oPayload = {
+         address: sAddress,
+         requestTimestamp: sTimestamp,
+         message: sMessage,
+         validationWindow: nValidationWindow
+      };
+   }
+   return oPayload;
 }
 
 /**
  * Validates address.
  */
 function validateAddress(sAddress) {
-	let oNow = Date.now();
+   let oNow = Date.now();
+   
+   return new Promise((resolve, reject) => {
+      oMempool.getEntry(sAddress).then((sTimestamp) => {
+         let nValidationWindow = 0;
+         let oPayload = null;
 
-	return new Promise((resolve, reject) => {
-		oMempool.getEntry(sAddress).then((sTimestamp) => {
-			let nValidationWindow = 0;
-			let oPayload = null;
-
-			if (!!sTimestamp) {
-				resolve(getValidationPayload(sAddress, sTimestamp));
-			} else {
-				oMempool.addEntry(sAddress).then((sNewTimestamp) => {
-					if (!!sNewTimestamp) {
-						resolve(getValidationPayload(sAddress, sNewTimestamp));
-					} else {
-						resolve(null);
-					}
-				}).catch((err) => {
-					console.log("Error encountered:" + err + "!");
-					reject(err);
-				});
-			}
-		}).catch((err) => {
-			console.log("Error encountered at getTimestamp:" + err + "!");
-			reject(err);
-		});
-	});
+         if (!!sTimestamp) {
+            resolve(getValidationPayload(sAddress, sTimestamp));
+         } else {
+            oMempool.addEntry(sAddress).then((sNewTimestamp) => {
+               if (!!sNewTimestamp) {
+                  resolve(getValidationPayload(sAddress, sNewTimestamp));
+               } else {
+                  resolve(null);
+               }
+            }).catch((err) => {
+               console.log("Error encountered:" + err + "!");
+               reject(err);
+            });
+         }
+      }).catch((err) => {
+         console.log("Error encountered at getTimestamp:" + err + "!");
+         reject(err);
+      });
+   });
 }
-
-
-
 
 //===================
 // API END POINTS
@@ -116,21 +113,19 @@ function validateAddress(sAddress) {
  * 
  */
 app.post('/requestValidation', function(req, res) {
-	let oBody = req.body;
-
-	// The post body has "address" key with value in it.
-	if (oBody !== undefined && oBody.address !== undefined) {
-		let sAddress = oBody.address;
+   let oBody = req.body;
+   
+   // The post body has "address" key with value in it.
+   if (oBody !== undefined && oBody.address !== undefined) {
+      let sAddress = oBody.address;
 		
-
-		validateAddress(sAddress).then((oPayload) => {
-			console.log("oPayload:" + oPayload);
-			res.send(oPayload);
-		}).catch((err) => {
-			res.send(err);
-		});
-
-	}
+      validateAddress(sAddress).then((oPayload) => {
+         console.log("oPayload:" + oPayload);
+         res.send(oPayload);
+      }).catch((err) => {
+         res.send(err);
+      });
+   }
 })
 
 /**
