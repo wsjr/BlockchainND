@@ -36,13 +36,13 @@ app.use(bodyParser.json());
  */
 function getTimestamp(sAddress) {
    return new Promise((resolve, reject) => {
-   	oMempool.getEntry(sAddress).then((sTimestamp) => {
-   		resolve(sTimestamp);   
-   	}).catch((err) => {
-   		console.log("Error encountered at getTimestamp:" + err + "!");
-   		resolve(null);
-		});
-	});
+      oMempool.getEntry(sAddress).then((sTimestamp) => {
+         resolve(sTimestamp);   
+      }).catch((err) => {
+         console.log("Error encountered at getTimestamp:" + err + "!");
+         resolve(null);
+      });
+   });
 }
 
 /**
