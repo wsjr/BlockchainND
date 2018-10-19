@@ -68,7 +68,7 @@ Example app listening on port 8000!
 
 ### Testing
 
-The following **5 API Block Endpoints** are as follows:
+The following **6 API Block Endpoints** are as follows:
 
 **POST BLOCK ENDPOINT**:
 ____
