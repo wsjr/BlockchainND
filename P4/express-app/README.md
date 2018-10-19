@@ -1,6 +1,6 @@
-# RESTful Web API with Node.js Framework
+# Build a Private Blockchain Notary Service
 
-This project is built using [ExpressJS](http://expressjs.com/) that serves as Web API on top of our private blockchain to submit and retrieve blockchain data.
+This project builds a Star Registry service that allows users to claim ownership of their favorite star in the night sky. It is built using [ExpressJS](http://expressjs.com/) that serves as Web API on top of our private blockchain. Our app validates requests, registers your favorite star and queries stars by wallet address or blockchain hash.
 
 ## Getting Started
 
@@ -40,19 +40,18 @@ npm install level --save
 
 ```
 npm install body-parser --save
-
+```
 
 - Install bitcoinjs-lib package. A javascript Bitcoin library for node.js and browsers.
 
 ```
 npm install bitcoinjs-lib --save
+```
 
 - Install bitcoinjs-message package. This will be used to verify a bitcoin message.
 
 ```
 npm install bitcoinjs-message --save
-
-
 ```
 ### Running
 Run the node application:
@@ -69,37 +68,71 @@ Example app listening on port 8000!
 
 ### Testing
 
-The following **2 API Block Endpoints** are as follows:
+The following **5 API Block Endpoints** are as follows:
 
-**GET BLOCK ENDPOINT**:
+**POST BLOCK ENDPOINT**:
 ____
 
-Get block object specified by the blockheight. The response for the endpoint should provide block object in JSON format.
+**1. Validates User Request**
 
-```
-http://localhost:8000/block/[blockheight]
-```
+This allow users to submit their request using their wallet address. Requests are timestamped and put in mempool and is valid for validationWindow duration. If the validationWindow expires, the request is removed from the mempool.
+
 Example:
 
 ```
-http://localhost:8000/block/0
+http://localhost:8000/requestValidation
+```
+Post body
+```
+{
+    "address": "TestWalletAddress1"
+}
 ```
 
 Returns
 ```
 {
-    "hash": "6f8b41db1ee46be046b7705ed083768a90b1891fc6d6bbfcb0a757048ffcc646",
-    "height": 0,
-    "body": "First block in the chain - Genesis block",
-    "time": "1537134644",
-    "previousBlockHash": "0x"
+    "address": "TestWalletAddress1",
+    "requestTimestamp": 1539916547290,
+    "message": "TestWalletAddress1:1539916547290:starRegistry",
+    "validationWindow": 300
+}
+```
+**2.    Validates User Request**
+
+After receiving the response, users will prove their blockchain identity by signing a message with their wallet. Once they sign this message, 
+the application will validate their request and grant access to register a star.
+
+Example:
+
+```
+http://localhost:8000/message-signature/validate
+```
+Post body
+```
+{
+    "address": "TestWalletAddress1",
+    "signature": "TestWalletSignature1"
 }
 ```
 
-**POST BLOCK ENDPOINT**:
-____
+Returns
+```
+{
+    "registerStar": true,
+    "status": {
+        "address": "TestWalletAddress1",
+        "requestTimestamp": 1539914796436,
+        "message": "TestWalletAddress1:1539914796436:starRegistry",
+        "validationWindow": 296.627,
+        "messageSignature": "valid"
+    }
+}
+```
 
-Post a new block with data payload option to add data to the block body. The block body should support a string of text. The response for the endpoint should provide block object in JSON format.
+**3. Register a star**
+
+Once a request has been validated, a user can proceed an register his own star.
 
 Example:
 
@@ -109,24 +142,108 @@ http://localhost:8000/block
 Post body
 ```
 {
-    "text": "Test Block 5"
+  "address": "TestWalletAddress1",
+  "star": {
+    "dec": "-26° 29' 24.9",
+    "ra": "16h 29m 1.0s",
+    "story": "Found star using https://www.google.com/sky/"
+  }
 }
 ```
 
 Returns
 ```
 {
-    "hash": "db410d59fd9dc6723fb844e27e7e73702cb658604c4797658efbb9b4a065e26e",
-    "height": "5",
-    "body": "Test Block 5",
-    "time": "1538108262",
-    "previousBlockHash": "64d5e3c3f0d912f18b9aea6738ebaa00a0c9d8cf0edcc213539f7fd974e960bc"
+    "hash": "a3d67cdfd2fd32c872d8c7cc9ebd399091bde2d48cb78a652826614b26be75e0",
+    "height": "2",
+    "body": {
+        "address": "TestWalletAddress1",
+        "star": {
+            "dec": "-26° 29' 24.9",
+            "ra": "16h 29m 1.0s",
+            "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
+        }
+    },
+    "time": "1539914820",
+    "previousBlockHash": "e9cc5f2713b4c4c3f045caac555acf56c02ae4861b7e62438273537244fb6c66"
 }
 ```
+
+**GET BLOCK ENDPOINT**:
+____
+**4. Get stars by wallet address**
+
+Example:
+
+```
+http://localhost:8000/stars/address:TestWalletAddress1
+```
+Returns
+```
+[
+    {
+        "hash": "e9cc5f2713b4c4c3f045caac555acf56c02ae4861b7e62438273537244fb6c66",
+        "height": "1",
+        "body": {
+            "address": "TestWalletAddress1",
+            "star": {
+                "dec": "-26° 29' 24.9",
+                "ra": "16h 29m 1.0s",
+                "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
+            }
+        },
+        "time": "1539914812",
+        "previousBlockHash": "a257c1ae4172ddce0cf95a328f7482862714a1aa9c47319e958da676852e7c92"
+    },
+    {
+        "hash": "a3d67cdfd2fd32c872d8c7cc9ebd399091bde2d48cb78a652826614b26be75e0",
+        "height": "2",
+        "body": {
+            "address": "TestWalletAddress1",
+            "star": {
+                "dec": "-26° 29' 24.9",
+                "ra": "16h 29m 1.0s",
+                "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
+            }
+        },
+        "time": "1539914820",
+        "previousBlockHash": "e9cc5f2713b4c4c3f045caac555acf56c02ae4861b7e62438273537244fb6c66"
+    }
+]
+```
+
+**5. Get stars by blockchain hash**
+
+Example:
+
+```
+http://localhost:8000/stars/hash:a3d67cdfd2fd32c872d8c7cc9ebd399091bde2d48cb78a652826614b26be75e0
+```
+Returns
+```
+[
+    {
+        "hash": "a3d67cdfd2fd32c872d8c7cc9ebd399091bde2d48cb78a652826614b26be75e0",
+        "height": "2",
+        "body": {
+            "address": "TestWalletAddress1",
+            "star": {
+                "dec": "-26° 29' 24.9",
+                "ra": "16h 29m 1.0s",
+                "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
+            }
+        },
+        "time": "1539914820",
+        "previousBlockHash": "e9cc5f2713b4c4c3f045caac555acf56c02ae4861b7e62438273537244fb6c66"
+    }
+]
+```
+
+
+
 
 ## Built With
 
 * [Express](http://expressjs.com/) - The web framework for NodeJS.
 * [NodeJS](https://nodejs.org/en/) - Javascript runtime
 * [LevelDB](http://leveldb.org/) - Lightweight DB to persist state.
-

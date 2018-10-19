@@ -11,46 +11,38 @@ const app = express();
 
 const Blockchain = require("./blockchain");
 const Block = require("./block");
+const Mempool = require("./mempool");
+
 
 const port = 8000;
-// 300 seconds
-const VALID_DURATION_IN_MEMPOOL_MS = 300000;
-const MILLISECONDS_TO_SECOND = 1/1000;
 
-let aRequestPool = [];
 let oBlockchain = new Blockchain();
+let oMempool = new Mempool();
 
-
-function getValidationWindow(sTimestamp) {
-	let nTimestamp = parseInt(sTimestamp);
-	let nDuration = Date.now() - nTimestamp;
-	return (VALID_DURATION_IN_MEMPOOL_MS - nDuration);
-}
-
-function isTimestampValid(sTimestamp) {
-	return getValidationWindow(sTimestamp) > 0;
-}
-
-function getEntryInRequestPool(sAddress) {
-	// Clean the mempool with expired transactions.
-	aRequestPool = aRequestPool.filter(function(entry) {
-		return isTimestampValid(entry.timestamp);
+/**
+ * Gets timestamp by wallet address in the mempool.
+ */
+function getTimestamp(sAddress) {
+	return new Promise((resolve, reject) => {
+		oMempool.getEntry(sAddress).then((sTimestamp) => {
+			resolve(sTimestamp);
+		}).catch((err) => {
+			console.log("Error encountered at getTimestamp:" + err + "!");
+			resolve(null);
+		});
 	});
-
-	// Find if there's any entry with the wallet address in the mempool.
-	let aMatch = aRequestPool.filter(function(entry) {
-		return entry.address === sAddress;
-	});
-
-	return aMatch[0];
 }
 
-function getStarRegistryPayload(oEntry) {
+/**
+ * Gets validation payload with te use of address and timestamp. It adds the following
+ * properties.
+ *  - message: [Wallet address]:[Timestamp]:starRegistry
+ *  - validationWindow: Time remaining since address was validated.
+ */
+function getValidationPayload(sAddress, sTimestamp) {
 	let oPayload = null;
-	if (oEntry !== undefined) {
-		let sTimestamp = oEntry.timestamp;
-		let sAddress = oEntry.address;
-		let nValidationWindow = getValidationWindow(sTimestamp) * MILLISECONDS_TO_SECOND;
+	if (!!sAddress && !!sTimestamp) {
+		let nValidationWindow = oMempool.getValidationWindowInSeconds(sTimestamp);
 		let sMessage = sAddress + ":" + sTimestamp + ":starRegistry";
 
 		oPayload = {
@@ -64,57 +56,53 @@ function getStarRegistryPayload(oEntry) {
 
 }
 
-function validateEntry(sAddress) {
+/**
+ * Validates address.
+ */
+function validateAddress(sAddress) {
 	let oNow = Date.now();
 
-	let oMatch = getEntryInRequestPool(sAddress);
-	let sTimestamp = "";
-	let nValidationWindow = 0;
-	let oPayload = null;
+	return new Promise((resolve, reject) => {
+		oMempool.getEntry(sAddress).then((sTimestamp) => {
+			let nValidationWindow = 0;
+			let oPayload = null;
 
-	if (oMatch !== undefined) {
-		oPayload = getStarRegistryPayload(oMatch);
-	} else {
-		let oEntry = {
-			address: sAddress,
-			timestamp: Date.now().toString()
-		};
-		aRequestPool.push(oEntry);
-
-		oPayload = getStarRegistryPayload(oEntry);
-	}
-	return oPayload;
+			if (!!sTimestamp) {
+				resolve(getValidationPayload(sAddress, sTimestamp));
+			} else {
+				oMempool.addEntry(sAddress).then((sNewTimestamp) => {
+					if (!!sNewTimestamp) {
+						resolve(getValidationPayload(sAddress, sNewTimestamp));
+					} else {
+						resolve(null);
+					}
+				}).catch((err) => {
+					console.log("Error encountered:" + err + "!");
+					reject(err);
+				});
+			}
+		}).catch((err) => {
+			console.log("Error encountered at getTimestamp:" + err + "!");
+			reject(err);
+		});
+	});
 }
 
 
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({
-   extended: false
-}));
 
-// parse application/json
-app.use(bodyParser.json());
+
+//===================
+// API END POINTS
+//===================
 
 
 /**
- * Validate User Request End Point: http://localhost:8000/requestValidation
+ * Validates User Request.
  * 
  * This allow users to submit their request using their wallet address. Requests
  * are timestamped and put in mempool and is valid for validationWindow duration.
  * If the validationWindow expires, the request is removed from the mempool.
  * 
- * Method: Post
- * Expected payload:
- *    {
- *       "address": [Blockchain ID or wallet address]
- *    }
- * Response:
- *    {
- *       "address": [wallet address],
- *       "requestTimestamp": [timestamp],
- *       "message": [wallet address]:[requestTimestamp]:starRegistry,
- *       "validationWindow": [seconds]
- *    }
  */
 app.post('/requestValidation', function(req, res) {
 	let oBody = req.body;
@@ -122,35 +110,23 @@ app.post('/requestValidation', function(req, res) {
 	// The post body has "address" key with value in it.
 	if (oBody !== undefined && oBody.address !== undefined) {
 		let sAddress = oBody.address;
-		let oPayload = validateEntry(sAddress);
+		
+		validateAddress(sAddress).then((oPayload) => {
+			res.send(oPayload);
+		}).catch((err) => {
+			res.send(err);
+		});
 
-		res.send(oPayload);
 	}
 })
 
 /**
- * Validate Message Signature End Point: http://localhost:8000/message-signature/validate
+ * Validate Message Signature.
  * 
  * After receiving the response, users will prove their blockchain identity 
  * by signing a message with their wallet. Once they sign this message, 
  * the application will validate their request and grant access to register a star.
  * 
- * Method: Post
- * Expected payload:
- *    {
- *       "address": [Blockchain ID or wallet address]
- *		 	"signature": [Message signature]
- *    }
- * Response:
- *    {
- *		 	"registarStar": true,
- *		 	"status": {
- *       	"address": [wallet address],
- *       	"requestTimestamp": [timestamp],
- *       	"message": [wallet address]:[requestTimestamp]:starRegistry,
- *       	"validationWindow": [seconds]
- *		 	}
- *    }
  */
 app.post('/message-signature/validate', function(req, res) {
 	let oBody = req.body;
@@ -160,31 +136,35 @@ app.post('/message-signature/validate', function(req, res) {
 		let sAddress = oBody.address;
 		let sSignature = oBody.signature;
 		
-		let oEntry = getEntryInRequestPool(sAddress);
-		let oStatus = getStarRegistryPayload(oEntry);
-		let oResult = {};
 
-		// If wallet address is not in the request pool, don't proceed and flag it.
-		if (oEntry === undefined || oStatus === undefined) {
-			oResult.registerStar = false;
-		} else {
-			// Verify the signature
-			oResult.registerStar = true;
-			oResult.status = oStatus;
-			
+		getTimestamp(sAddress).then((sTimestamp) => {
+			let oStatus = getValidationPayload(sAddress, sTimestamp);
+			let oResult = {};
 
-			// TODO: Hardcode to valid for now.
-			oResult.status.messageSignature = "valid";
-			// let bVerified = bitcoinMessage.verify(oResult.message, sAddress, sSignature);
-			// oResult.status.messageSignature = bVerified ? "valid" : "invalid";
-		}
-		res.send(oResult);
+			console.log("validate, address:" + sAddress + " timestamp:" + sTimestamp);
+
+			// If wallet address is not in the request pool, don't proceed and flag it.
+			if (sTimestamp === undefined || oStatus === undefined) {
+				oResult.registerStar = false;
+			} else {
+				// Verify the signature
+				oResult.registerStar = true;
+				oResult.status = oStatus;
+				
+
+				// TODO: Hardcode to valid for now.
+				oResult.status.messageSignature = "valid";
+				// let bVerified = bitcoinMessage.verify(oResult.message, sAddress, sSignature);
+				// oResult.status.messageSignature = bVerified ? "valid" : "invalid";
+			}
+			res.send(oResult);
+		});
 	}
 })
 
-// POST Block Endpoint
-//   This expects the post block body to have a string of text. 
-//   The response for the endpoint should provide block object in JSON format.
+/**
+ * Register a star.
+ */
 app.post('/block', function(req, res) {
 	let oBody = req.body;
 
@@ -208,10 +188,11 @@ app.post('/block', function(req, res) {
    } else {
       res.send("ERROR: Either the body is empty or the body.text has no value.");
    }
-})
+});
 
-// GET
-
+/**
+ * Gets stars by wallet address
+ */
 app.get('/stars/address::address', function(req, res) {
 	let sAddress = req.params.address;
 	let aStars = [];
@@ -246,8 +227,11 @@ app.get('/stars/address::address', function(req, res) {
    } catch (e) {
       res.send("ERROR:" + e);
    }
-})
+});
 
+/**
+ * Gets stars by blockchain hash.
+ */
 app.get('/stars/hash::hash', function(req, res) {
 	let sHash = req.params.hash;
 	let aStars = [];
@@ -281,6 +265,18 @@ app.get('/stars/hash::hash', function(req, res) {
    } catch (e) {
       res.send("ERROR:" + e);
    }
-})
+});
+
+//===================
+// APP 
+//===================
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({
+   extended: false
+}));
+
+// parse application/json
+app.use(bodyParser.json());
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
