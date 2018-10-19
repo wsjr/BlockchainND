@@ -19,6 +19,18 @@ const port = 8000;
 let oBlockchain = new Blockchain();
 let oMempool = new Mempool();
 
+//===================
+// APP 
+//===================
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({
+   extended: false
+}));
+
+// parse application/json
+app.use(bodyParser.json());
+
 /**
  * Gets timestamp by wallet address in the mempool.
  */
@@ -111,7 +123,9 @@ app.post('/requestValidation', function(req, res) {
 	if (oBody !== undefined && oBody.address !== undefined) {
 		let sAddress = oBody.address;
 		
+
 		validateAddress(sAddress).then((oPayload) => {
+			console.log("oPayload:" + oPayload);
 			res.send(oPayload);
 		}).catch((err) => {
 			res.send(err);
@@ -141,8 +155,6 @@ app.post('/message-signature/validate', function(req, res) {
 			let oStatus = getValidationPayload(sAddress, sTimestamp);
 			let oResult = {};
 
-			console.log("validate, address:" + sAddress + " timestamp:" + sTimestamp);
-
 			// If wallet address is not in the request pool, don't proceed and flag it.
 			if (sTimestamp === undefined || oStatus === undefined) {
 				oResult.registerStar = false;
@@ -151,11 +163,8 @@ app.post('/message-signature/validate', function(req, res) {
 				oResult.registerStar = true;
 				oResult.status = oStatus;
 				
-
-				// TODO: Hardcode to valid for now.
-				oResult.status.messageSignature = "valid";
-				// let bVerified = bitcoinMessage.verify(oResult.message, sAddress, sSignature);
-				// oResult.status.messageSignature = bVerified ? "valid" : "invalid";
+				let bVerified = bitcoinMessage.verify(oResult.status.message, sAddress, sSignature);
+				oResult.status.messageSignature = bVerified ? "valid" : "invalid";
 			}
 			res.send(oResult);
 		});
@@ -172,7 +181,7 @@ app.post('/block', function(req, res) {
    if (oBody !== undefined && oBody.address !== undefined && oBody.star !== undefined) {
    	// Convert ascii to hexadecimal for the star's story value.
    	if (oBody.star.story !== undefined) {
-   		let sStoryHex = Buffer.from(oBody.star.story, 'ascii').toString('hex')
+   		let sStoryHex = Buffer.from(oBody.star.story, 'ascii').toString('hex');
    		oBody.star.story = sStoryHex;
    	}
 
@@ -205,10 +214,12 @@ app.get('/stars/address::address', function(req, res) {
       		// Traverse the chain.
       		for (let i = 1; i <= height; i++) {
 	      		oBlockchain.getBlock(i).then((block) => {
-	      			console.log(block.body.address + ":" + sAddress);
-
 	      			// If address matches, add it to the result.
 	      			if (block.body.address === sAddress) {
+	      				// Decode the story
+	      				let oBody = block.body;
+	      				oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+	      				// Collect block
 	      				aStars.push(block);
 	      			}
 
@@ -246,6 +257,10 @@ app.get('/stars/hash::hash', function(req, res) {
 	      		oBlockchain.getBlock(i).then((block) => {
 	      			// If address matches, add it to the result.
 	      			if (block.hash === sHash) {
+	      				// Decode the story
+	      				let oBody = block.body;
+						oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+						// Collect block
 	      				aStars.push(block);
 	      			}
 
@@ -257,7 +272,6 @@ app.get('/stars/hash::hash', function(req, res) {
 	               res.send("ERROR: fetching the block at height " + i + ":" + err);
 	            });
 	      	}
-	      	//res.send(aStars);
       	}
       }).catch((err) => {
          res.send("ERROR:" + err);
@@ -267,16 +281,33 @@ app.get('/stars/hash::hash', function(req, res) {
    }
 });
 
-//===================
-// APP 
-//===================
-
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({
-   extended: false
-}));
-
-// parse application/json
-app.use(bodyParser.json());
+/**
+ * Gets star by block height
+ */
+app.get('/block/:blockheight', function(req, res) {
+	let nBlockheight = req.params.blockheight;
+	
+	try {
+      // Get block height
+      oBlockchain.getBlockHeight().then((height) => {
+      	// More than the genesis block.
+      	if (height > 0) {
+      		oBlockchain.getBlock(nBlockheight).then((block) => {
+  				// Decode the story
+  				let oBody = block.body;
+  				oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+  				// Send response
+  				res.send(oBody);
+      		}).catch((err) => {
+               res.send("ERROR: fetching the block at height " + nBlockheight + ":" + err);
+            });
+      	}
+      }).catch((err) => {
+         res.send("ERROR:" + err);
+      });
+   } catch (e) {
+      res.send("ERROR:" + e);
+   }
+});
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

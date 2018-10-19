@@ -75,7 +75,7 @@ ____
 
 **1. Validates User Request**
 
-This allow users to submit their request using their wallet address. Requests are timestamped and put in mempool and is valid for validationWindow duration. If the validationWindow expires, the request is removed from the mempool.
+This allow users to submit their request using their wallet address. Requests are timestamped and put in mempool and is valid for validationWindow duration. If the validationWindow expires, the request is removed from the mempool and proceeding actions should be blocked until a new request validation is submitted.
 
 Example:
 
@@ -100,8 +100,7 @@ Returns
 ```
 **2.    Validates User Request**
 
-After receiving the response, users will prove their blockchain identity by signing a message with their wallet. Once they sign this message, 
-the application will validate their request and grant access to register a star.
+After receiving the response, users will prove their blockchain identity by signing a message with their wallet. Once they sign this message, the application will validate their request and grant access to register a star.
 
 Example:
 
@@ -132,7 +131,7 @@ Returns
 
 **3. Register a star**
 
-Once a request has been validated, a user can proceed an register his own star.
+Once a request has been validated, a user can proceed to register his own star.
 
 Example:
 
