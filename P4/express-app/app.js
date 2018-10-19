@@ -293,14 +293,14 @@ app.get('/block/:blockheight', function(req, res) {
       	// More than the genesis block.
       	if (height > 0) {
       		oBlockchain.getBlock(nBlockheight).then((block) => {
-  				// Decode the story
-  				let oBody = block.body;
-  				oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
-  				// Send response
-  				res.send(oBody);
-      		}).catch((err) => {
-               res.send("ERROR: fetching the block at height " + nBlockheight + ":" + err);
-            });
+	  				// Decode the story
+	  				let oBody = block.body;
+	  				oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+	  				// Send response
+	  				res.send(oBody);
+				}).catch((err) => {
+			      res.send("ERROR: fetching the block at height " + nBlockheight + ":" + err);
+			   });
       	}
       }).catch((err) => {
          res.send("ERROR:" + err);
