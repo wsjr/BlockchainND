@@ -35,12 +35,12 @@ app.use(bodyParser.json());
  * Gets timestamp by wallet address in the mempool.
  */
 function getTimestamp(sAddress) {
-	return new Promise((resolve, reject) => {
-		oMempool.getEntry(sAddress).then((sTimestamp) => {
-			resolve(sTimestamp);
-		}).catch((err) => {
-			console.log("Error encountered at getTimestamp:" + err + "!");
-			resolve(null);
+   return new Promise((resolve, reject) => {
+   	oMempool.getEntry(sAddress).then((sTimestamp) => {
+   		resolve(sTimestamp);   
+   	}).catch((err) => {
+   		console.log("Error encountered at getTimestamp:" + err + "!");
+   		resolve(null);
 		});
 	});
 }
@@ -54,18 +54,17 @@ function getTimestamp(sAddress) {
 function getValidationPayload(sAddress, sTimestamp) {
 	let oPayload = null;
 	if (!!sAddress && !!sTimestamp) {
-		let nValidationWindow = oMempool.getValidationWindowInSeconds(sTimestamp);
-		let sMessage = sAddress + ":" + sTimestamp + ":starRegistry";
+   	let nValidationWindow = oMempool.getValidationWindowInSeconds(sTimestamp);
+   	let sMessage = sAddress + ":" + sTimestamp + ":starRegistry";
 
-		oPayload = {
-			address: sAddress,
-			requestTimestamp: sTimestamp,
-			message: sMessage,
-			validationWindow: nValidationWindow
-		};
+   	oPayload = {
+   		address: sAddress,
+   		requestTimestamp: sTimestamp,
+   		message: sMessage,
+   		validationWindow: nValidationWindow
+   	};
 	}
 	return oPayload;
-
 }
 
 /**
