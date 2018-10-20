@@ -9,9 +9,9 @@ const bitcoinMessage = require('bitcoinjs-message');
 
 const app = express();
 
-const Blockchain = require("./blockchain");
-const Block = require("./block");
-const Mempool = require("./mempool");
+const Blockchain = require("./libs/blockchain");
+const Block = require("./libs/block");
+const Mempool = require("./libs/mempool");
 
 
 const port = 8000;
