@@ -98,7 +98,6 @@ class Mempool {
                   console.log('addEntry: Mempool ' + key + ' submission failed', err);
                   resolve(null);
                } else {
-                  console.log("Timestamp:" + sTimestamp);
                   // return the timestamp.
                   resolve(sTimestamp);
                }
@@ -132,6 +131,24 @@ class Mempool {
             reject(err);
          });
       })
+   }
+
+   /**
+    * Removes entry from levelDB using the wallet address.
+    */
+    removeEntry(key) {
+      let self = this;
+      return new Promise((resolve, reject) => {
+        self.db.del(key, function(err) {
+           if (err) {
+              console.log('removeEntry: Mempool ' + key + ' submission failed', err);
+              resolve(false);
+           } else {
+              // return the timestamp.
+              resolve(true);
+           }
+        });
+      });
    }
 }
 

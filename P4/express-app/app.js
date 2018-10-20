@@ -39,7 +39,7 @@ function getTimestamp(sAddress) {
       oMempool.getEntry(sAddress).then((sTimestamp) => {
          resolve(sTimestamp);   
       }).catch((err) => {
-         console.log("Error encountered at getTimestamp:" + err + "!");
+         console.log("[getTimestamp] Error encountered:" + err + "!");
          resolve(null);
       });
    });
@@ -88,12 +88,12 @@ function validateAddress(sAddress) {
                   resolve(null);
                }
             }).catch((err) => {
-               console.log("Error encountered:" + err + "!");
+               console.log("[validateAddress] Error encountered:" + err + "!");
                reject(err);
             });
          }
       }).catch((err) => {
-         console.log("Error encountered at getTimestamp:" + err + "!");
+         console.log("[validateAddress] Error encountered:" + err + "!");
          reject(err);
       });
    });
@@ -120,7 +120,6 @@ app.post('/requestValidation', function(req, res) {
       let sAddress = oBody.address;
 		
       validateAddress(sAddress).then((oPayload) => {
-         console.log("oPayload:" + oPayload);
          res.send(oPayload);
       }).catch((err) => {
          res.send(err);
@@ -172,19 +171,43 @@ app.post('/block', function(req, res) {
 
    // The post body should have: "address" and "star" registration information.
    if (oBody !== undefined && oBody.address !== undefined && oBody.star !== undefined) {
+      let sAddress = oBody.address;
+
       // Convert ascii to hexadecimal for the star's story value.
       if (oBody.star.story !== undefined) {
          let sStoryHex = Buffer.from(oBody.star.story, 'ascii').toString('hex');
          oBody.star.story = sStoryHex;
       }
 
-      let newBlock = new Block(oBody);
-      oBlockchain.addBlock(newBlock).then((result) => {
-         if (result) {
-            res.send(newBlock);
+
+      // Ensure the address is in the validated pool.
+      oMempool.getEntry(sAddress).then((sTimestamp) => {
+         if (sTimestamp !== null) {
+            // Proceed in adding a block now.
+            let newBlock = new Block(oBody);
+            oBlockchain.addBlock(newBlock).then((result) => {
+               if (result) {
+                  res.send(newBlock);
+
+                  // Remove entry in the mempool
+                  oMempool.removeEntry(sAddress).then((result) => {
+                     if (result) {
+                        console.log(sAddress + " successfully removed from mempool.");
+                     } else {
+                        console.log(sAddress + " was NOT successfully removed from mempool.");
+                     }
+                  });
+
+               } else {
+                  res.send("ERROR: Failed to add new block to the block chain.");
+               }
+            });
          } else {
-            res.send("ERROR: Failed to add new block to the block chain.");
+            res.send("ERROR: Failed to add new block to the block chain. The address provided has not been validated.");
          }
+      }).catch((err) => {
+         console.log("Error encountered at adding block for " + sAddress + ":" + err + "!");
+         resolve(null);
       });
    } else {
       res.send("ERROR: Either the body is empty or the body.text has no value.");
@@ -210,7 +233,7 @@ app.get('/stars/address::address', function(req, res) {
                   if (block.body.address === sAddress) {
                      // Decode the story
                      let oBody = block.body;
-                     oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+                     oBody.star.storyDecoded = Buffer.from(oBody.star.story, 'hex').toString('ascii');
                      // Collect block
                      aStars.push(block);
                   }
@@ -251,7 +274,7 @@ app.get('/stars/hash::hash', function(req, res) {
                   if (block.hash === sHash) {
                      // Decode the story
                      let oBody = block.body;
-                     oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+                     oBody.star.storyDecoded = Buffer.from(oBody.star.story, 'hex').toString('ascii');
                      // Collect block
                      aStars.push(block);
                   }
@@ -287,7 +310,7 @@ app.get('/block/:blockheight', function(req, res) {
             oBlockchain.getBlock(nBlockheight).then((block) => {
                // Decode the story
                let oBody = block.body;
-               oBody.star.story = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+               oBody.star.storyDecoded = Buffer.from(oBody.star.story, 'hex').toString('ascii');
                // Send response
                res.send(oBody);
             }).catch((err) => {
