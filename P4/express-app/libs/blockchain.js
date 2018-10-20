@@ -4,7 +4,7 @@
 
 const SHA256 = require('crypto-js/sha256');
 const level = require('level');
-const chainDB = './chaindata';
+const chainDB = './libs/chaindata';
 const Block = require("./block");
 
 /* ===== Blockchain Class ==========================

@@ -1,5 +1,5 @@
 const level = require('level');
-const mempoolDB = './mempooldata';
+const mempoolDB = './libs/mempooldata';
 
 
 // 300 seconds allowed to stay in the mempool.

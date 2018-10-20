@@ -159,6 +159,8 @@ app.post('/message-signature/validate', function(req, res) {
             oResult.status.messageSignature = bVerified ? "valid" : "invalid";
          }
          res.send(oResult);
+      }).catch((err) => {
+         res.send("ERROR: Please validate wallet address first.");
       });
    }
 })
@@ -170,7 +172,9 @@ app.post('/block', function(req, res) {
    let oBody = req.body;
 
    // The post body should have: "address" and "star" registration information.
-   if (oBody !== undefined && oBody.address !== undefined && oBody.star !== undefined) {
+   if (oBody !== undefined && oBody.address !== undefined && 
+         oBody.star !== undefined && oBody.star.dec.length > 0 && oBody.star.ra.length > 0 && oBody.star.story.length > 0) {
+      
       let sAddress = oBody.address;
 
       // Convert ascii to hexadecimal for the star's story value.
@@ -210,7 +214,7 @@ app.post('/block', function(req, res) {
          resolve(null);
       });
    } else {
-      res.send("ERROR: Either the body is empty or the body.text has no value.");
+      res.send("ERROR: Please supply the required info: wallet address and star information");
    }
 });
 
@@ -312,7 +316,7 @@ app.get('/block/:blockheight', function(req, res) {
                let oBody = block.body;
                oBody.star.storyDecoded = Buffer.from(oBody.star.story, 'hex').toString('ascii');
                // Send response
-               res.send(oBody);
+               res.send(block);
             }).catch((err) => {
                res.send("ERROR: fetching the block at height " + nBlockheight + ":" + err);
             });
