@@ -148,7 +148,7 @@ app.post('/message-signature/validate', function(req, res) {
          let oResult = {};
 
          // If wallet address is not in the request pool, don't proceed and flag it.
-         if (!!sTimestamp || !!oStatus) {
+         if (!sTimestamp || !oStatus) {
             oResult.registerStar = false;
          } else {
             // Verify the signature
