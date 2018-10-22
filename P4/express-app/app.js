@@ -12,12 +12,14 @@ const app = express();
 const Blockchain = require("./libs/blockchain");
 const Block = require("./libs/block");
 const Mempool = require("./libs/mempool");
+const InvalidSignaturePool = require("./libs/invalidsignaturepool");
 
 
 const port = 8000;
 
 let oBlockchain = new Blockchain();
 let oMempool = new Mempool();
+let oInvalidSignaturePool = new InvalidSignaturePool();
 
 //===================
 // APP 
@@ -32,14 +34,21 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 /**
- * Gets timestamp by wallet address in the mempool.
+ * Determines if a string contains only ascii or not.
  */
-function getTimestamp(sAddress) {
+function isASCII(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+}
+
+/**
+ * Gets info by wallet address in the mempool.
+ */
+function getInfo(sAddress) {
    return new Promise((resolve, reject) => {
-      oMempool.getEntry(sAddress).then((sTimestamp) => {
-         resolve(sTimestamp);   
+      oMempool.getEntry(sAddress).then((oInfo) => {
+         resolve(oInfo);   
       }).catch((err) => {
-         console.log("[getTimestamp] Error encountered:" + err + "!");
+         console.log("[getInfo] Error encountered:" + err + "!");
          resolve(null);
       });
    });
@@ -74,16 +83,16 @@ function validateAddress(sAddress) {
    let oNow = Date.now();
    
    return new Promise((resolve, reject) => {
-      oMempool.getEntry(sAddress).then((sTimestamp) => {
+      oMempool.getEntry(sAddress).then((oInfo) => {
          let nValidationWindow = 0;
          let oPayload = null;
 
-         if (!!sTimestamp) {
-            resolve(getValidationPayload(sAddress, sTimestamp));
+         if (!!oInfo) {
+            resolve(getValidationPayload(sAddress, oInfo.timestamp));
          } else {
-            oMempool.addEntry(sAddress).then((sNewTimestamp) => {
-               if (!!sNewTimestamp) {
-                  resolve(getValidationPayload(sAddress, sNewTimestamp));
+            oMempool.addEntry(sAddress).then((oInfo) => {
+               if (!!oInfo) {
+                  resolve(getValidationPayload(sAddress, oInfo.timestamp));
                } else {
                   resolve(null);
                }
@@ -143,24 +152,36 @@ app.post('/message-signature/validate', function(req, res) {
       let sAddress = oBody.address;
       let sSignature = oBody.signature;
 
-      getTimestamp(sAddress).then((sTimestamp) => {
-         let oStatus = getValidationPayload(sAddress, sTimestamp);
-         let oResult = {};
+      // Let's update the signature entry first for the address.
+      oMempool.updateSignatureEntry(sAddress, sSignature).then((oInfo) => {
+         getInfo(sAddress).then((oInfo) => {
+            let oStatus = getValidationPayload(sAddress, oInfo.timestamp);
+            let oResult = {};
+            let sTimestamp = oInfo.timestamp;
 
-         // If wallet address is not in the request pool, don't proceed and flag it.
-         if (!sTimestamp || !oStatus) {
-            oResult.registerStar = false;
-         } else {
-            // Verify the signature
-            oResult.registerStar = true;
-            oResult.status = oStatus;
-				
-            let bVerified = bitcoinMessage.verify(oResult.status.message, sAddress, sSignature);
-            oResult.status.messageSignature = bVerified ? "valid" : "invalid";
-         }
-         res.send(oResult);
+            // If wallet address is not in the request pool, don't proceed and flag it.
+            if (!sTimestamp || !oStatus) {
+               oResult.registerStar = false;
+            } else {
+
+               let bVerified = bitcoinMessage.verify(oStatus.message, sAddress, sSignature);
+               console.log("bVerified:" + bVerified);
+               // if message is not verified, flag it.
+               if (bVerified === false) {
+                  oResult.registerStar = false;
+               } else {
+                  // Verify the Signature
+                  oResult.registerStar = true;
+                  oResult.status = oStatus;
+                  oResult.status.messageSignature = "valid";
+               }
+            }
+            res.send(oResult);
+         }).catch((err) => {
+            res.send("ERROR: Please validate wallet address first." + err);
+         });
       }).catch((err) => {
-         res.send("ERROR: Please validate wallet address first.");
+         res.send("ERROR: Updating signature entry.");
       });
    }
 })
@@ -176,43 +197,61 @@ app.post('/block', function(req, res) {
          oBody.star !== undefined && oBody.star.dec.length > 0 && oBody.star.ra.length > 0 && oBody.star.story.length > 0) {
       
       let sAddress = oBody.address;
+      let sStory = oBody.star.story;
 
-      // Convert ascii to hexadecimal for the star's story value.
-      if (oBody.star.story !== undefined) {
-         let sStoryHex = Buffer.from(oBody.star.story, 'ascii').toString('hex');
+      // Check if star's story value contains only ascii and not more than 500 bytes.
+      if (sStory !== undefined && isASCII(sStory) && sStory.length <= 500) {
+      
+         // Convert ascii to hexadecimal for the star's story value.
+         let sStoryHex = Buffer.from(sStory, 'ascii').toString('hex');
          oBody.star.story = sStoryHex;
+      
+         // Ensure the address is in the validated pool.
+         oMempool.getEntry(sAddress).then((oInfo) => {
+            if (oInfo.timestamp !== null) {
+               // Check if the signature is valid.
+               oInvalidSignaturePool.isSignatureValid(oInfo.signature).then((bResult) => {
+                  if (bResult) {
+                     // Proceed in adding a block now.
+                     let newBlock = new Block(oBody);
+                     oBlockchain.addBlock(newBlock).then((result) => {
+                        if (result) {
+                           res.send(newBlock);
+
+                           let sSignature = oInfo.signature;
+
+                           // Remove entry in the mempool, provide the signature to add it in the invalidate signature list.
+                           oMempool.removeEntry(sAddress).then((bResult) => {
+                              if (bResult) {
+                                 console.log(sAddress + " successfully removed from mempool.");
+                                 // Invalidate the signature
+                                 oInvalidSignaturePool.invalidateSignature(sSignature, sAddress).then((bInvalidateResult) => {
+                                    if (bInvalidateResult) {
+                                       console.log(sSignature + " signature invalidation succeeded.");
+                                    } else {
+                                       console.log(sSignature + " signature invalidation failed.");
+                                    }
+                                 });
+                              } else {
+                                 console.log(sAddress + " was NOT successfully removed from mempool.");
+                              }
+                           });
+
+                        } else {
+                           res.send("ERROR: Failed to add new block to the block chain.");
+                        }
+                     });
+                  }
+               });
+            } else {
+               res.send("ERROR: Failed to add new block to the block chain. The address provided has not been validated.");
+            }
+         }).catch((err) => {
+            res.send("ERROR: Failed to add new block to the block chain. The address provided has not been validated or signature has been invalidated.");
+         });
+      } else {
+         res.send("ERROR: star's story is undefined, does not contain all ascii or is more than 500 bytes.");
       }
-
-
-      // Ensure the address is in the validated pool.
-      oMempool.getEntry(sAddress).then((sTimestamp) => {
-         if (sTimestamp !== null) {
-            // Proceed in adding a block now.
-            let newBlock = new Block(oBody);
-            oBlockchain.addBlock(newBlock).then((result) => {
-               if (result) {
-                  res.send(newBlock);
-
-                  // Remove entry in the mempool
-                  oMempool.removeEntry(sAddress).then((result) => {
-                     if (result) {
-                        console.log(sAddress + " successfully removed from mempool.");
-                     } else {
-                        console.log(sAddress + " was NOT successfully removed from mempool.");
-                     }
-                  });
-
-               } else {
-                  res.send("ERROR: Failed to add new block to the block chain.");
-               }
-            });
-         } else {
-            res.send("ERROR: Failed to add new block to the block chain. The address provided has not been validated.");
-         }
-      }).catch((err) => {
-         console.log("Error encountered at adding block for " + sAddress + ":" + err + "!");
-         resolve(null);
-      });
    } else {
       res.send("ERROR: Please supply the required info: wallet address and star information");
    }
@@ -310,16 +349,21 @@ app.get('/block/:blockheight', function(req, res) {
       // Get block height
       oBlockchain.getBlockHeight().then((height) => {
          // More than the genesis block.
-         if (height > 0) {
+         if (height >= 0) {
             oBlockchain.getBlock(nBlockheight).then((block) => {
-               // Decode the story
-               let oBody = block.body;
-               oBody.star.storyDecoded = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+               // Non-genesis blocks should have a star's story.
+               if (nBlockheight > 0) {
+                  // Decode the story
+                  let oBody = block.body;
+                  oBody.star.storyDecoded = Buffer.from(oBody.star.story, 'hex').toString('ascii');
+               }
                // Send response
                res.send(block);
             }).catch((err) => {
                res.send("ERROR: fetching the block at height " + nBlockheight + ":" + err);
             });
+         } else {
+            res.send("ERROR: blockheight should be greater than or equal to 0");
          }
       }).catch((err) => {
          res.send("ERROR:" + err);

@@ -6,7 +6,6 @@ const mempoolDB = './libs/mempooldata';
 const VALID_DURATION_IN_MEMPOOL_MS = 300000;
 const MILLISECONDS_TO_SECOND = 1/1000;
 
-//const Block = require("./block");
 
 /* ===== Mempool Class ========================
 |  Class with a constructor for new mempool    |
@@ -14,7 +13,7 @@ const MILLISECONDS_TO_SECOND = 1/1000;
 
 class Mempool {
    constructor() {
-      this.db = level(mempoolDB);
+      this.db = level(mempoolDB, { valueEncoding : 'json' });
    }
 
    /**
@@ -47,9 +46,18 @@ class Mempool {
       return this.getValidationWindow(sTimestamp) > 0;
    }
 
-   // ==========================
-   // === DB related methods ===
-   // ==========================
+   // ====================================================
+   // === Address+Timestamp validation related methods ===
+   //  ====================================================
+
+   /**
+    *  DB has entries in this format:
+    *
+    *   wallet address: {
+    *       timestamp: [timestamp],
+    *       signature: [signature] 
+    *   }
+    */
 
    /**
     * Removes entries with timestamp passed the validation window.
@@ -57,10 +65,11 @@ class Mempool {
    removeExpiredEntries() {
       let self = this;
       let aDeleteOps = [];
+      let aInvalidSignatures = [];
 
       return new Promise((resolve, reject) => {
          self.db.createReadStream().on('data', function(data) {
-            if (self.isTimestampValid(data.value) === false) {
+            if (self.isTimestampValid(data.value.timestamp) === false) {
                console.log("timestamp not valid for " + data.key);
                aDeleteOps.push({type: 'del', key: data.key});
             }
@@ -85,21 +94,23 @@ class Mempool {
    }
 
    /**
-    * Add entry to the level DB using wallet address as key and timestamp as value.
+    * Add entry to the level DB using wallet address as key and timestamp .
     */
-   addEntry(key) {
+   addEntry(sAddress) {
       let self = this;
       return new Promise((resolve, reject) => {
          // Removed expired entries
          self.removeExpiredEntries().then((aDeleteOps) => {
             let sTimestamp = self.getNowTimestamp();
-            self.db.put(key, sTimestamp, function(err) {
+            let oInfo = {timestamp: sTimestamp};
+            self.db.put(sAddress, oInfo, function(err) {
                if (err) {
-                  console.log('addEntry: Mempool ' + key + ' submission failed', err);
+                  console.log('addEntry: Mempool ' + sAddress + ' submission failed', err);
                   resolve(null);
                } else {
-                  // return the timestamp.
-                  resolve(sTimestamp);
+                  // return the info.
+                  console.log("oInfo:" + oInfo);
+                  resolve(oInfo);
                }
             });
          }).catch((err) => {
@@ -110,20 +121,57 @@ class Mempool {
    }
 
    /**
+    * Update entry to the level DB using wallet address as key and signature.
+    */
+   updateSignatureEntry(sAddress, sSignature) {
+      let self = this;
+      return new Promise((resolve, reject) => {
+         // Removed expired entries
+         self.removeExpiredEntries().then((aDeleteOps) => {
+            self.db.get(sAddress, function(err, value) {
+               if (err) {
+                  console.log('updateSignatureEntry, getEntry: Mempool ' + sAddress + ' submission failed', err);
+                  resolve(null);
+               } else {
+                  let oInfo = value;
+                  // Add the signature
+                  oInfo.signature = sSignature;
+
+                  self.db.put(sAddress, oInfo, function(err) {
+                     if (err) {
+                        console.log('updateSignatureEntry, Updating: Mempool ' + sAddress + ' submission failed', err);
+                        resolve(null);
+                     } else {
+                        // return the info.
+                        resolve(oInfo);
+                     }
+                  });
+
+               }
+            });
+         }).catch((err) => {
+            console.log("Error adding signature entry in the mempool!");
+            reject(err);
+         });
+      })
+   }
+
+
+   /**
     * Gets entry from levelDB using the wallet address.
     */
-   getEntry(key) {
+   getEntry(sAddress) {
       let self = this;
       return new Promise((resolve, reject) => {
          // Removed expired entries 
          self.removeExpiredEntries().then((aDeleteOps) => {
-            self.db.get(key, function(err, value) {
+            self.db.get(sAddress, function(err, value) {
                if (err) {
-                  console.log('getEntry: Mempool ' + key + ' submission failed', err);
+                  console.log('getEntry: Mempool ' + sAddress + ' submission failed', err);
                   resolve(null);
                } else {
-                  // Return timestamp
-                  resolve(JSON.parse(value));
+                  // Return info
+                  resolve(value);
                }
             });
          }).catch((err) => {
@@ -136,12 +184,12 @@ class Mempool {
    /**
     * Removes entry from levelDB using the wallet address.
     */
-    removeEntry(key) {
+    removeEntry(sAddress) {
       let self = this;
       return new Promise((resolve, reject) => {
-        self.db.del(key, function(err) {
+         self.db.del(sAddress, function(err) {
            if (err) {
-              console.log('removeEntry: Mempool ' + key + ' submission failed', err);
+              console.log('removeEntry: Mempool ' + sAddress + ' submission failed', err);
               resolve(false);
            } else {
               // return the timestamp.
