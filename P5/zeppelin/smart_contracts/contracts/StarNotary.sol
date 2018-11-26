@@ -75,19 +75,24 @@ contract StarNotary is ERC721 {
     /**
      * Private methods
      */
-    // function _concat(string _name, string _starStory, string _ra, string _dec, string _mag) internal pure returns (string) {
-    //     return string(abi.encodePacked(_name, _starStory, _ra, _dec, _mag));
-    // }
-
-    // function _getStarInfoHash(string _name, string _starStory, string _ra, string _dec, string _mag) internal pure returns (uint256) {
-    //     return uint256(keccak256(bytes(_concat(_name, _starStory, _ra, _dec, _mag))));
-    // }
-
     function _concatCoords(string _ra, string _dec, string _mag) internal pure returns (string) {
         return string(abi.encodePacked(_ra, _dec, _mag));
     }
 
     function _getHashedCoords(string _ra, string _dec, string _mag) internal pure returns (uint256) {
         return uint256(keccak256(bytes(_concatCoords(_ra, _dec, _mag))));
+    }
+
+    // Found this function here: https://ethereum.stackexchange.com/questions/10932/how-to-convert-string-to-int
+    function _stringToUint(string s) internal pure returns (uint) {
+        bytes memory b = bytes(s);
+        uint result = 0;
+        for (uint i = 0; i < b.length; i++) { // c = b[i] was not needed
+            if (b[i] >= 48 && b[i] <= 57) {
+                result = result * 10 + (uint(b[i]) - 48); 
+                // bytes and int are not compatible with the operator -.
+            }
+        }
+        return result;
     }
 }

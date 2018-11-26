@@ -1,4 +1,0 @@
-contract address: 0xb0a97751Fb263BBC303B2E6c06bD43771281D2F9
-contact hash: 0xc931f0d779aabae96caa244aeb7e5cd990417bbe7371b68804947f2631a7d799
-create star txn: 
-put star for sale txn: 
