@@ -231,7 +231,7 @@ contract SupplyChain {
   // Define a function 'buyItem' that allows the disributor to mark an item 'Sold'
   // Use the above defined modifiers to check if the item is available for sale, if the buyer has paid enough, 
   // and any excess ether sent is refunded back to the buyer
-  function buyItem(uint _upc) forSale(_upc) paidEnough(msg.value) checkValue(_upc) public payable 
+  function buyItem(uint _upc) forSale(_upc) paidEnough(items[_upc].productPrice) checkValue(_upc) public payable 
     // Call modifier to check if upc has passed previous supply chain stage
     
     // Call modifer to check if buyer has paid enough
@@ -246,7 +246,7 @@ contract SupplyChain {
     items[_upc].itemState = State.Sold;
     
     // Transfer money to farmer
-    items[_upc].originFarmerID.transfer(msg.value);
+    items[_upc].originFarmerID.transfer(items[_upc].productPrice);
     
     // emit the appropriate event
     emit Sold(_upc);
