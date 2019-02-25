@@ -2,15 +2,30 @@
 
 This repository contains an Ethereum DApp that demonstrates a Coconut Supply Chain flow which goes from farmer, processor, retailer to consumer. The user story is similar to any commonly used supply chain process. A Seller can add items to the inventory system stored in the blockchain. A Buyer can purchase such items from the inventory system. Additionally a Seller can mark an item as Shipped, and similarly a Buyer can mark an item as Received.
 
+This is the detailed flow of the DApp:
+- Farmer harvests coconuts
+- Farmer sells coconuts
+- Processor buys coconuts
+- Processor processes coconuts
+- Processor packs coconuts
+- Processor ships coconuts to the Retailer
+- Retailer receives coconuts from the Processor.
+- Consumer purchases coconuts from the Retailer.
+
+Below is the Sequence Diagram:
+
+![sequence diagram](images/coconut-sequence-diagram.png)
+
+
 The DApp User Interface when running should look like...
 
-![truffle test](images/product-overview.png)
+![product overview](images/product-overview.png)
 
-![truffle test](images/farm-details.png)
+![farm details](images/farm-details.png)
 
-![truffle test](images/product-details.png)
+![product details](images/product-details.png)
 
-![truffle test](images/transaction-history.png)
+![transaction history](images/transaction-history.png)
 
 
 ## Getting Started
@@ -72,7 +87,7 @@ ganache-cli -m "spirit supply whale amount human item harsh scare congress disco
 
 Your terminal should look something like this:
 
-![truffle test](images/truffle-ganache-cli.png)
+![truffle ganache cli](images/truffle-ganache-cli.png)
 
 In a separate terminal window, Compile smart contracts:
 
@@ -90,7 +105,7 @@ truffle migrate
 
 Your terminal should look something like this:
 
-![truffle test](images/truffle-migrate-local.png)
+![truffle migrate local](images/truffle-migrate-local.png)
 
 Test smart contracts:
 
@@ -123,7 +138,7 @@ truffle migrate --reset --network rinkeby
 
 - Open index.html
 
-- Start registering and querying stars
+- Start tracking coconuts.
 
 
 ## Built With
@@ -132,11 +147,6 @@ truffle migrate --reset --network rinkeby
 * [IPFS](https://ipfs.io/) - IPFS is the Distributed Web | A peer-to-peer hypermedia protocol
 to make the web faster, safer, and more open.
 * [Truffle Framework](http://truffleframework.com/) - Truffle is the most popular development framework for Ethereum with a mission to make your life a whole lot easier.
-
-
-## Authors
-
-See also the list of [contributors](https://github.com/your/project/contributors.md) who participated in this project.
 
 ## Acknowledgments
 
