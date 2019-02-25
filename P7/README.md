@@ -1,6 +1,6 @@
-# Supply chain & data auditing
+# Coconut Supply chain & data auditing
 
-This repository containts an Ethereum DApp that demonstrates a Supply Chain flow between a Seller and Buyer. The user story is similar to any commonly used supply chain process. A Seller can add items to the inventory system stored in the blockchain. A Buyer can purchase such items from the inventory system. Additionally a Seller can mark an item as Shipped, and similarly a Buyer can mark an item as Received.
+This repository contains an Ethereum DApp that demonstrates a Coconut Supply Chain flow which goes from farmer, processor, retailer to consumer. The user story is similar to any commonly used supply chain process. A Seller can add items to the inventory system stored in the blockchain. A Buyer can purchase such items from the inventory system. Additionally a Seller can mark an item as Shipped, and similarly a Buyer can mark an item as Received.
 
 The DApp User Interface when running should look like...
 
@@ -19,28 +19,50 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Please make sure you've already installed ganache-cli, Truffle and enabled MetaMask extension in your browser.
-
-```
-Give examples (to be clarified)
-```
+- [npm](https://www.npmjs.com/) (Node.js package manager)
+- [Truffle](https://truffleframework.com/) to compile, deploy and test smart contracts.
+- [http-server](https://www.npmjs.com/package/http-server) A command-line http server.
+- [Metamask](https://metamask.io/) Ether wallet.
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
-
-Clone this repository:
-
+- Install http-server if you don't have it yet.
 ```
-git clone https://github.com/udacity/nd1309/tree/master/course-5/project-6
+npm install http-server -g
 ```
 
-Change directory to ```project-6``` folder and install all requisite npm packages (as listed in ```package.json```):
+- Install Truffle if you don't have it yet.
+```
+npm install truffle -g
+```
 
+- Install Truffle HDWallet Provider
 ```
-cd project-6
-npm install
+npm install --save truffle-hdwallet-provider
 ```
+
+### Configuring
+
+- Initialize Truffle
+```
+truffle init
+```
+
+- Go to [Infura.io](https://www.infura.io/). 
+  - Create an account and a new project.
+  - Change the endpoint to **Rinkeby** Test Network.
+  - Copy the link to be used later in the truffle.js configuration part.
+
+- Install Metamask and create account.
+  - Make sure to point to **Rinkeby** network.
+  - To fund your wallet to be used for **Rinkeby** network, go to this (faucet)[https://faucet.rinkeby.io/] and follow the instructions.
+  - Get the wallet seed to be used later in the the truffle.js configuration part.
+
+- Go to truffle.js (for Mac or truffle-config.js for Windows).
+  - Replace **[Metamask wallet seed goes here]** with the Metamask seed you got from above instructions..
+  - Replace **[Infura link goes here]** with the Infura link you got from above instructions.
+
+### Testing
 
 Launch Ganache:
 
@@ -50,17 +72,13 @@ ganache-cli -m "spirit supply whale amount human item harsh scare congress disco
 
 Your terminal should look something like this:
 
-![truffle test](images/ganache-cli.png)
+![truffle test](images/truffle-ganache-cli.png)
 
 In a separate terminal window, Compile smart contracts:
 
 ```
 truffle compile
 ```
-
-Your terminal should look something like this:
-
-![truffle test](images/truffle_compile.png)
 
 This will create the smart contract artifacts in folder ```build\contracts```.
 
@@ -72,7 +90,7 @@ truffle migrate
 
 Your terminal should look something like this:
 
-![truffle test](images/truffle_migrate.png)
+![truffle test](images/truffle-migrate-local.png)
 
 Test smart contracts:
 
@@ -82,13 +100,31 @@ truffle test
 
 All 10 tests should pass.
 
-![truffle test](images/truffle_test.png)
+![truffle test](images/truffle-test.png)
 
-In a separate terminal window, launch the DApp:
 
+### Deploying to Rinkeby Network
+
+- To migrate for the first time to **Rinkeby** Test Network
 ```
-npm run dev
+truffle migrate --network rinkeby
 ```
+or 
+- To migrate onwards
+```
+truffle migrate --reset --network rinkeby
+```
+
+### Launching DApp
+
+- Go to the coconut directory
+
+- Launch the http-server by doing: ***http-server***
+
+- Open index.html
+
+- Start registering and querying stars
+
 
 ## Built With
 
