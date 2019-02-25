@@ -1,0 +1,38 @@
+
+Contract:
+----------
+
+Running migration: 1_initial_migration.js
+  Replacing Migrations...
+  ... 0xecfd2c6c829c0de4f9161802da19766fdd472c8332a1a3e0e27544feef1fa79f
+  Migrations: 0x7765db0c983f8d7d8914872c22ce47ae746fc967
+Saving successful migration to network...
+  ... 0x05c46ace3b42ae5144bfcb14ca564ca006e5252a197de4e0ba00e3fd94c4627b
+Saving artifacts...
+Running migration: 2_deploy_contracts.js
+  Replacing FarmerRole...
+  ... 0x789e56edce0a0d03d48e954c738f1f299235a398d9b2f4fa23015066e9dabc39
+  FarmerRole: 0xd6b03f7a5c42b0e578524b98c160a1d55e0bb69b
+  Replacing DistributorRole...
+  ... 0x4bbab482b03262c0632ff6b63ad9d2f9dc0913dcfca956502781c26a11168d3c
+  DistributorRole: 0xd57ecc3a33f6705eb551a9bbdeed25a2194caaf9
+  Replacing RetailerRole...
+  ... 0x0a7fbb109567e2a89f5d2d3a8780736e97ff75aeae3734c4c7b26e67298b80ad
+  RetailerRole: 0x28b32a52a12e6b6fb596abf37dc59929b287242a
+  Replacing ConsumerRole...
+  ... 0x2db8c56bb76fd7b720695dfcfedfadfdf0ceee3bb326769177d38fe71067c3f5
+  ConsumerRole: 0xc31c6688873bc8e27f222e97c87b7bb93da5078a
+  Replacing SupplyChain...
+  ... 0x9646716e89b8d3854bba656429e52349ba41b1f6f2c4d5c6c9b161d8999e53fa
+  SupplyChain: 0x7e4c3be57108427dc22dc7719bf6397a172e351c
+Saving successful migration to network...
+  ... 0x9d6c0a57972b867f8ac59d5137cfdafee7c210ff6d5f96efeb561527350e5192
+Saving artifacts...
+
+
+Versions:
+----------
+Node: v8.12.0
+Truffle: v4.1.14
+truffle-hdwallet-provider@0.0.6
+  └── web3@0.18.4
