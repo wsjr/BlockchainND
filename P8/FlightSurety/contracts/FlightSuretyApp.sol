@@ -74,7 +74,7 @@ contract FlightSuretyApp {
     */
     modifier requireAirlineClearedForFunding(address airline) 
     {
-        require(flightSuretyData.isAirlineClearedForFunding(airline), "Airline is cleared for funding");
+        require(flightSuretyData.isAirlineClearedForFunding(airline), "Airline should be cleared for funding");
         _;
     }
 
@@ -194,14 +194,15 @@ contract FlightSuretyApp {
                             (   
                                 address newAirline
                             )
-                            external
-                            returns(bool success, uint256 votes)
+                            public
+                            //returns(bool success, uint256 votes)
     {
 
 
-        (success, votes)  = flightSuretyData.registerAirline(msg.sender, newAirline);
+        //(success, votes)  = flightSuretyData.registerAirline(msg.sender, newAirline);
+        flightSuretyData.registerAirline(msg.sender, newAirline);
 
-        return (success, votes);
+        //return (success, votes);
     }
 
     /**
@@ -249,6 +250,81 @@ contract FlightSuretyApp {
     {
         return address(flightSuretyData).balance;
     }
+
+    /**
+    * @dev Get registered airlines count.
+    *
+    */ 
+    function getRegisteredAirlinesCount()
+                        external
+                        view
+                        returns (uint256) 
+    {
+        return flightSuretyData.getRegisteredAirlinesCount();
+    }
+
+    function getRegisteredAirlineStatusCode(address airline)
+                        external
+                        view
+                        returns (uint8) 
+    {
+        return flightSuretyData.getRegisteredAirlineStatusCode(airline);
+    }
+
+    function isAirlineClearedForFunding(address airline)
+                        external
+                        view
+                        returns (bool) 
+    {
+        return flightSuretyData.isAirlineClearedForFunding(airline);
+    }
+
+    function getAirlineStatusInfo(address airline)
+                        external
+                        view
+                        returns (bool added, bool voted, bool funded, bool registered, uint256 votes, uint256 votesNeede) {
+        return flightSuretyData.getAirlineStatusInfo(airline);
+    }
+
+    function getNextRequiredConsensusCount()
+                        external
+                        view
+                        returns (uint256) {
+        return flightSuretyData.getNextRequiredConsensusCount();
+    }
+
+    // Checks the status of airlines
+    // function isAirlineAdded(address airline)
+    //                     external
+    //                     view
+    //                     returns (bool) 
+    // {
+    //     return flightSuretyData.isAirlineAdded(airline);
+    // }
+
+    // function isAirlineVotedIn(address airline)
+    //                     external
+    //                     view
+    //                     returns (bool) 
+    // {
+    //     return flightSuretyData.isAirlineVotedIn(airline);
+    // }
+
+    // function isAirlineFunded(address airline)
+    //                     external
+    //                     view
+    //                     returns (bool) 
+    // {
+    //     return flightSuretyData.isAirlineFunded(airline);
+    // }
+
+    // function isAirlineRegistered(address airline)
+    //                     external
+    //                     view
+    //                     returns (bool) 
+    // {
+    //     return flightSuretyData.isAirlineRegistered(airline);
+    // }
 
    /**
     * @dev Register a future flight for insuring.
@@ -561,8 +637,9 @@ contract FlightSuretyData {
     function getNextRequiredConsensusCount() public view returns(uint256);
     // Airline
     function isAirline(address newAirline) external view returns (bool);
-    function voteCount(address newAirline) external view returns (uint256);
-    function registerAirline(address airline, address newAirline) external returns (bool success, uint256 votes);
+    // function voteCount(address newAirline) external view returns (uint256);
+    function registerAirline(address airline, address newAirline) public;
+    //function registerAirline(address airline, address newAirline) external returns (bool success, uint256 votes);
     function voteAirline(address airline, address newAirline) external;
     function fundAirline(address airline) external;
     // Flight
@@ -576,4 +653,10 @@ contract FlightSuretyData {
     function pay(address insuree) external;
     // Utility
     function getPayoutBalance(address insuree) external view returns(uint256);
+    // Debugging
+    function getRegisteredAirlinesCount() public view returns (uint256);
+    function getRegisteredAirlineStatusCode(address airline) public view returns (uint8);
+    //function getRegisteredAirlineStatusCode(uint8 index) public view returns (uint8);
+
+    function getAirlineStatusInfo(address airline) external view returns (bool added, bool voted, bool funded, bool registered, uint256 votes, uint256 votesNeeded);
 }

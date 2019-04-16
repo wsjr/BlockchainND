@@ -9,7 +9,7 @@ contract FlightSuretyData {
     uint8 private constant REGISTRATION_CODE_UNKNOWN             = 0;
     uint8 private constant REGISTRATION_CODE_ADDED_TO_QUEUE      = 1;
     uint8 private constant REGISTRATION_CODE_VOTED_IN            = 2;
-    uint8 private constant REGISTRATION_CODE_PAID                = 3;
+    uint8 private constant REGISTRATION_CODE_FUNDED              = 3;
     uint8 private constant REGISTRATION_CODE_REGISTERED          = 4;
 
     /********************************************************************************************/
@@ -20,12 +20,11 @@ contract FlightSuretyData {
     uint256 private constant MULTIPARTY_CONSENSUS_THRESHOLD = 4;
     
     uint constant M = 1;
-    uint256 private insuranceBalance = 0 ether;
 
-    address private contractOwner;          // Account used to deploy contract
-    bool private operational = true;        // Blocks all state changes throughout the contract if false
+    address private contractOwner;              // Account used to deploy contract
+    bool private operational = true;            // Blocks all state changes throughout the contract if false
     bool private testing = false;
-
+    
     address[] multiCalls = new address[](0);
     mapping(address => uint256) private authorizedContracts;
 
@@ -34,18 +33,18 @@ contract FlightSuretyData {
     struct User {
         address id;
         bool isRegistered;
-        uint256 payout;                     // Holds the total payout for the user.
+        uint256 payout;                         // Holds the total payout for the user.
     }
     mapping(address => User) users;
 
     //------------
     // Airlines
     struct Airline {
-        uint8 registrationCode;             // Registration phase the airline is in.
-        address[] approvedBy;               // Registered airlines which voted for the airline.
+        uint8 registrationCode;                 // Registration phase the airline is in.
+        address[] approvedBy;                   // Registered airlines which voted for the airline.
     }
-    mapping(address => Airline) airlines;   // Holds all the candidate airlines
-    address[] registeredAirlines;           // Holds all registered airlines
+    mapping(address => Airline) airlines;       // Holds all the candidate airlines
+    address[] registeredAirlines;               // Holds all registered airlines
 
     //------------
     // Flights
@@ -61,9 +60,9 @@ contract FlightSuretyData {
     //------------
     // Insurances
     struct Insurance {
-        uint256 paidAmount;                 // Amount paid by the insuree
-        bool payoutReceived;                // The user has been credited if insurance kicked in.
-        address buyerAddress;               // Links to Users map
+        uint256 paidAmount;                     // Amount paid by the insuree
+        bool payoutReceived;                    // The user has been credited if insurance kicked in.
+        address buyerAddress;                   // Links to Users map
     }
     // Track all paid insurances
     // Key = hash(airline, flight, timestamp)
@@ -85,7 +84,7 @@ contract FlightSuretyData {
                                 public 
     {
         contractOwner = msg.sender;
-
+        
         // Create first Airline. Mark it as Added and VotedIn. Fund it later.
         airlines[firstAirline] = Airline({
             registrationCode: REGISTRATION_CODE_VOTED_IN, 
@@ -331,6 +330,14 @@ contract FlightSuretyData {
         return registeredAirlines.length;
     }
 
+    function getRegisteredAirlineStatusCode(/*uint8 index*/ address airline)
+                                        public
+                                        view
+                                        returns (uint8)
+    {
+        return airlines[airline].registrationCode;
+    }
+
 /**
     * @dev Returns true if airline is registered. Otherwise, false.
     */ 
@@ -389,13 +396,70 @@ contract FlightSuretyData {
         return airlines[airline].registrationCode == REGISTRATION_CODE_VOTED_IN;
     }
 
+    function isAirlineAdded         (
+                                        address airline
+                                    ) 
+                                    internal 
+                                    view 
+                                    returns (bool) 
+    {
+        return airlines[airline].registrationCode >= REGISTRATION_CODE_ADDED_TO_QUEUE;
+    }
+
+    function isAirlineVotedIn       (
+                                        address airline
+                                    ) 
+                                    internal 
+                                    view 
+                                    returns (bool)
+    {
+         return airlines[airline].registrationCode >= REGISTRATION_CODE_VOTED_IN;
+    }
+
+    function isAirlineFunded        (
+                                        address airline
+                                    ) 
+                                    internal 
+                                    view 
+                                    returns (bool)
+    {
+        return airlines[airline].registrationCode >= REGISTRATION_CODE_FUNDED;
+    }
+
+    function isAirlineRegistered    (
+                                        address airline
+                                    ) 
+                                    internal 
+                                    view 
+                                    returns (bool)
+    {
+        return airlines[airline].registrationCode == REGISTRATION_CODE_REGISTERED;
+    }
+
+    function getAirlineStatusInfo   (
+                                        address airline
+                                    )
+                                    external 
+                                    view 
+                                    returns (bool added, bool voted, bool funded, bool registered, uint256 votes, uint256 votesNeeded)
+    {
+        return (
+            isAirlineAdded(airline),
+            isAirlineVotedIn(airline),
+            isAirlineFunded(airline),
+            isAirlineRegistered(airline),
+            voteCount(airline),
+            getNextRequiredConsensusCount()
+        );
+    }
+
     /**
     * @dev Returns vote count.
     */ 
     function voteCount      (
                                 address newAirline
                             ) 
-                            external
+                            internal
                             view 
                             returns (uint256)
     {
@@ -486,22 +550,22 @@ contract FlightSuretyData {
                                 address airline,
                                 address newAirline
                             )
-                            external
+                            public
                             requireRegisteredAirline(airline) 
                             requireNewAirline(newAirline)
-                            returns (bool success, uint256 votes)
+                            //returns (bool success, uint256 votes)
     {
         // Rules for registering an airline:
-
-        // Rule #1: First airline is registered and funded immediately.
+        
+        // Rule #1: First airline is registered and voted in.
         if (registeredAirlines.length == 0) {
-            // Mark as VotedIn (no need for sponsor)
             airlines[newAirline] = Airline({
                 registrationCode: REGISTRATION_CODE_VOTED_IN, 
                 approvedBy: new address[](0)
             });
 
-            success = true;
+            // success = true;
+            // votes = 0;
 
         // Rule #2: Only existing airline may register a new airline until there are 
         //          atleast 4 airlines registered.
@@ -513,9 +577,6 @@ contract FlightSuretyData {
             });
             airlines[newAirline].approvedBy.push(airline);
 
-            success = true;
-            votes = 1;
-
         // Rule #3: Registration of 5th and subsequent airlines requires multi-party 
         //          consensus of 50% of registered airlines.
         } else {
@@ -526,10 +587,10 @@ contract FlightSuretyData {
             });
             // 1st vote from sponsor, need to gather more votes.
             airlines[newAirline].approvedBy.push(airline);
-            votes = 1;
+            //votes = 1;
         }
 
-        return (success, votes);
+        //return (success, votes);
     }
 
     /**
@@ -563,6 +624,9 @@ contract FlightSuretyData {
                             )
                             external
     {
+        // Mark as Funded.
+        airlines[airline].registrationCode = REGISTRATION_CODE_FUNDED;
+
         // Added to registered airlines
         registeredAirlines.push(airline);
 
@@ -601,7 +665,7 @@ contract FlightSuretyData {
 
     //--------------------
     // Insurance functions
-    
+
     //--------------------
 
     /**
