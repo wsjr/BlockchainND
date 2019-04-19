@@ -58,7 +58,9 @@
         </ul>
 
         <div class="tab-content" id="pills-tabContent">
-            <!-- Airline -->
+            <!----------------->
+            <!-- AIRLINE TAB -->
+            <!----------------->
             <div class="tab-pane fade show active" id="pills-airline" role="tabpanel" aria-labelledby="pills-airline-tab">
                 <div class="row">
                     <div class="col-3">
@@ -71,7 +73,9 @@
                     </div>
                     <div class="col-9">
                         <div class="tab-content" id="v-pills-tabContent">
+                            <!------------------>
                             <!-- Info airline -->
+                            <!------------------>
                             <div class="tab-pane fade show active" id="v-pills-a-info" role="tabpanel" aria-labelledby="v-pills-a-info-tab">
                                 <table class="table table-sm table-hover table-striped table-dark" style="text-align:center">
                                     <thead>
@@ -81,124 +85,274 @@
                                         <th scope="col">Voted</th>
                                         <th scope="col">Funded</th>
                                         <th scope="col">Registered</th>
-                                        <th scope="col">Votes Needed</th>
+                                        <th scope="col">Remaining Votes Needed</th>
                                         </tr>
                                     </thead>
                                     <tbody id="a-info-table">
                                     </tbody>
                                 </table>
-                                <!--
-                                <btn class="btn btn-primary" id="get-airlines-count">Get Airlines Count</btn>
-                                <br><br>
-                                <div class="row top-20">
-                                    <label class="form">Airline</label> <input type="text" id="d-airline">
-                                    <btn class="btn btn-primary" id="get-airline-status-code">Get Airline Status Code</btn>
-                                    &nbsp;&nbsp;
-                                    <btn class="btn btn-primary" id="get-cleared-for-funding">Is Cleared for Funding?</btn>
-                                </div>
-                                -->
                             </div>
-                            <!-- Register airline-->
+                            <!---------------------->
+                            <!-- Register airline -->
+                            <!---------------------->
                             <div class="tab-pane fade" id="v-pills-a-register" role="tabpanel" aria-labelledby="v-pills-a-register-tab">
-                                <div class="row top-20">
-                                    <!-- List applicant airlines -->
-                                    <div class="form-group" id="applicant-airlines-group">
-                                        <label for="applicant-airlines">Applicant Airline</label>
-                                        <select class="form-control" id="applicant-airlines">
-                                        </select>
+                                <div class="form-table">
+                                    <!-- Applicant airlines -->
+                                    <div id="applicant-airlines-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="applicant-airlines">Applicant Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select class="form-control" id="applicant-airlines"></select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row top-20">
-                                    <!-- List registered airlines -->
-                                    <div class="form-group" id="registered-airlines-group">
-                                        <label for="registered-airlines">Registered Airlines</label>
-                                        <select class="form-control" id="registered-airlines">
-                                        </select>
+                                    <!-- Registered airlines -->
+                                    <div id="registered-airlines-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="registered-airlines">Registered Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select class="form-control" id="registered-airlines"></select>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div class="row top-20">
-                                    <btn class="btn btn-primary" id="register-airline">Register</btn>
+                                    <!-- Register Button -->
+                                    <div class="form-row">
+                                        <btn class="btn btn-primary" id="register-airline">Register</btn>
+                                    </div>
                                 </div>
                             </div>
+                            <!------------------>
                             <!-- Vote airline -->
+                            <!------------------>
                             <div class="tab-pane fade" id="v-pills-a-vote" role="tabpanel" aria-labelledby="v-pills-a-vote-tab">
-                                <div class="row top-20">
-                                    <label class="form">Airline</label> <input type="text" id="v-airline"> <btn class="btn btn-primary" id="vote-airline">Vote</btn>
-                                </div>
-                            </div>
-                            <!-- Fund airline -->
-                            <div class="tab-pane fade" id="v-pills-a-fund" role="tabpanel" aria-labelledby="v-pills-a-fund-tab">
-                                <div class="row top-20">
-                                    <!-- List airlines that needs funding-->
-                                    <div class="form-group" id='needfunding-airline-group'>
-                                        <label for="a-fund-">Airlines</label>
-                                        <select class="form-control" id="needfunding-airlines">
-                                        </select>
+                                <div class="form-table">
+                                    <!-- Applicant airlines -->
+                                    <div id="vote-applicant-airlines-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="vote-applicant-airlines">Applicant Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select  id="vote-applicant-airlines" class="form-control"></select>
+                                        </div>
+                                    </div>
+                                    <!-- Registered airlines -->
+                                    <div  id="vote-registered-airlines-group" class="form-row top-20">
+                                        <div class="form-label form-cell">
+                                            <label for="vote-registered-airlines">Registered Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select  id="vote-registered-airlines" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Vote button -->
+                                    <div class="form-row top-20">
+                                        <btn class="btn btn-primary" id="vote-airline">Vote</btn>
                                     </div>
                                 </div>
-                                
-                                
-                                <div class="row top-20">
-                                    <!--<label class="form">Airline</label> <input type="text" id="f-airline"> -->
-                                    <btn class="btn btn-primary" id="fund-airline">Fund</btn>
+                            </div>
+                            <!------------------>
+                            <!-- Fund airline -->
+                            <!------------------>
+                            <div class="tab-pane fade" id="v-pills-a-fund" role="tabpanel" aria-labelledby="v-pills-a-fund-tab">
+                                <div class="form-table">
+                                    <!-- Airlines that need funding -->
+                                    <div id="needfunding-airline-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="needfunding-airlines">Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select class="form-control" id="needfunding-airlines">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Fund button -->
+                                    <div class="form-row">
+                                        <btn class="btn btn-primary" id="fund-airline">Fund</btn>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div> 
             </div>
-            <!-- Flight -->
+            <!---------------->
+            <!-- FLIGHT TAB -->
+            <!---------------->
             <div class="tab-pane fade" id="pills-flight" role="tabpanel" aria-labelledby="pills-flight-tab">
                 <div class="row">
                     <div class="col-3">
                         <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                             <a class="nav-link active" id="v-pills-f-register-tab" data-toggle="pill" href="#v-pills-f-register" role="tab" aria-controls="v-pills-f-register" aria-selected="true">Register</a>
                             <a class="nav-link" id="v-pills-f-status-tab" data-toggle="pill" href="#v-pills-f-status" role="tab" aria-controls="v-pills-f-status" aria-selected="false">Status</a>
-                            <a class="nav-link" id="v-pills-f-debug-tab" data-toggle="pill" href="#v-pills-f-debug" role="tab" aria-controls="v-pills-f-debug" aria-selected="false">Debug</a>
                         </div>
                     </div>
                     <div class="col-9">
                         <div class="tab-content" id="v-pills-tabContent">
+                            <!--------------------->
                             <!-- Register Flight -->
+                            <!--------------------->
                             <div class="tab-pane fade show active" id="v-pills-f-register" role="tabpanel" aria-labelledby="v-pills-f-register-tab">
-                                Register
+                                <div class="form-table">
+                                    <!-- Airlines -->
+                                    <div id="fr-airline-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="fr-airlines">Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select id="fr-airlines" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Flight text field -->
+                                    <div class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="fr-flight">Flight</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <input type="text" id="fr-flight">
+                                        </div>
+                                    </div>
+                                    <!-- Register button -->
+                                    <div class="form-row">
+                                        <btn id="fr-register-button" class="btn btn-primary">Register</btn>
+                                    </div>
+                                </div>
                             </div>
                             <!-- Check flight status -->
                             <div class="tab-pane fade" id="v-pills-f-status" role="tabpanel" aria-labelledby="v-pills-f-status-tab">
+                                <!--
                                 <div class="row top-20">
                                     <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
                                 </div>
-                            </div>
-                            <!-- Debug flight -->
-                            <div class="tab-pane fade" id="v-pills-f-debug" role="tabpanel" aria-labelledby="v-pills-f-debug-tab">
-                                Flight: Debug
+                                -->
+                                <div class="form-table">
+                                    <!-- Airlines -->
+                                    <div id="fs-airline-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="fs-airlines">Airline</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select id="fs-airlines" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Flight -->
+                                    <div id="fs-flight-group" class="form-row">
+                                        <div class="form-label form-cell">
+                                            <label for="fs-flights">Flight</label>
+                                        </div>
+                                        <div class="form-cell">
+                                            <select id="fs-flights" class="form-control">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Buy button -->
+                                    <div class="form-row">
+                                        <btn id="fs-submit-oracle-button" class="btn btn-primary">Submit to Oracles</btn>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div> 
             </div>
-            <!-- Passenger -->
+            <!------------------->
+            <!-- PASSENGER TAB -->
+            <!------------------->
             <div class="tab-pane fade" id="pills-passenger" role="tabpanel" aria-labelledby="pills-passenger-tab">
                     <div class="row">
                         <div class="col-3">
                             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                 <a class="nav-link active" id="v-pills-p-buy-tab" data-toggle="pill" href="#v-pills-p-buy" role="tab" aria-controls="v-pills-p-buy" aria-selected="true">Buy</a>
                                 <a class="nav-link" id="v-pills-p-payout-tab" data-toggle="pill" href="#v-pills-p-payout" role="tab" aria-controls="v-pills-p-payout" aria-selected="false">Payout</a>
-                                <a class="nav-link" id="v-pills-p-debug-tab" data-toggle="pill" href="#v-pills-p-debug" role="tab" aria-controls="v-pills-p-debug" aria-selected="false">Debug</a>
                             </div>
                         </div>
                         <div class="col-9">
                             <div class="tab-content" id="v-pills-tabContent">
+                                <!------------------->
                                 <!-- Buy insurance -->
-                                <div class="tab-pane fade show active" id="v-pills-p-buy" role="tabpanel" aria-labelledby="v-pills-p-buy-tab">Buy Insurance</div>
-                                <!-- Check payout / Send payment -->
-                                <div class="tab-pane fade" id="v-pills-p-payout" role="tabpanel" aria-labelledby="v-pills-p-payout-tab">
-                                    Check payout balance, Send payment.
+                                <!------------------->
+                                <div class="tab-pane fade show active" id="v-pills-p-buy" role="tabpanel" aria-labelledby="v-pills-p-buy-tab">
+                                    <div class="form-table">
+                                        <!-- Passengers -->
+                                        <div id="pb-passenger-group" class="form-row">
+                                            <div class="form-label form-cell">
+                                                <label for="pb-passengers">Passenger</label>
+                                            </div>
+                                            <div class="form-cell">
+                                                <select id="pb-passengers" class="form-control">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Airlines -->
+                                        <div id="pb-airline-group" class="form-row">
+                                            <div class="form-label form-cell">
+                                                <label for="pb-airlines">Airline</label>
+                                            </div>
+                                            <div class="form-cell">
+                                                <select id="pb-airlines" class="form-control">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Flight -->
+                                        <div id="pb-flight-group" class="form-row">
+                                            <div class="form-label form-cell">
+                                                <label for="pb-flights">Flight</label>
+                                            </div>
+                                            <div class="form-cell">
+                                                <select id="pb-flights" class="form-control">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Amount -->
+                                        <div id="pb-amount-group" class="form-row">
+                                            <div class="form-label form-cell">
+                                                <label for="pb-amounts">Amount (in ether)</label>
+                                            </div>
+                                            <div class="form-cell">
+                                                <select id="pb-amounts" class="form-control">
+                                                    <option value="-1">SELECT ONE</option>
+                                                    <option value="0.25">0.25</option>
+                                                    <option value="0.50">0.50</option>
+                                                    <option value="0.75">0.75</option>
+                                                    <option value="1.0">1.0</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Buy button -->
+                                        <div class="form-row">
+                                            <btn id="pb-buy-button" class="btn btn-primary">Buy</btn>
+                                        </div>
+                                    </div>
                                 </div>
-                                <!-- Debug passenger -->
-                                <div class="tab-pane fade" id="v-pills-p-debug" role="tabpanel" aria-labelledby="v-pills-p-debug-tab">
-                                    Passenger: Debug
+                                <!------------>
+                                <!-- Payout -->
+                                <!------------>
+                                <div class="tab-pane fade" id="v-pills-p-payout" role="tabpanel" aria-labelledby="v-pills-p-payout-tab">
+                                    <div class="form-table">
+                                        <!-- Passengers -->
+                                        <div id="pb-passenger-group" class="form-row">
+                                            <div class="form-label form-cell">
+                                                <label for="pp-passengers">Passenger</label>
+                                            </div>
+                                            <div class="form-cell">
+                                                <select id="pp-passengers" class="form-control">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Buttons -->
+                                        <div class="form-row">
+                                            <!-- Get Payout Balance -->
+                                            <div class="form-cell">
+                                                <btn id="pp-check-button" class="btn btn-primary">Check Payout</btn>&nbsp;
+                                            </div>
+                                            <!-- Withdraw Payout Balance -->
+                                            <div class="form-cell">
+                                                <btn id="pp-withdraw-button" class="btn btn-primary">Withdraw Payout</btn>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

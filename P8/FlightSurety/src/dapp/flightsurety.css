@@ -24,6 +24,27 @@ section {
     /* margin-bottom: 50px; */
 }
 
+.form-inline {
+    display: flex;
+    align-items: center;
+}
+
+.form-table {
+    display:table;
+}
+
+.form-row {
+    display: table-row;
+}
+
+.form-cell {
+    display: table-cell;
+}
+
+.form-label {
+    padding: 10px 30px 10px 0px;
+}
+
 .field {
     font-weight: bold;
     text-align: right;

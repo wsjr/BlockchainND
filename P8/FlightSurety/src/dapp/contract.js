@@ -39,8 +39,6 @@ export default class Contract {
             self.owner = null;
             self.airlines = [];
             self.passengers = [];
-
-            self.setupRegisteredAirlines = false;
           });
     }
 
@@ -51,7 +49,7 @@ export default class Contract {
 
             let counter = 1;
             
-            while(this.airlines.length < 5) {
+            while(this.airlines.length < 10) {
                 this.airlines.push(accts[counter++]);
             }
 
@@ -70,13 +68,14 @@ export default class Contract {
             .call({ from: self.owner}, callback);
     }
 
-    fetchFlightStatus(flight, callback) {
+    fetchFlightStatus(airline, flight, timestamp, callback) {
         let self = this;
         let payload = {
-            airline: self.airlines[0],
-            flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
-        } 
+          airline: airline,
+          flight: flight,
+          timestamp: timestamp
+        };
+
         self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
             .send({from: self.owner}, (error, result) => {
@@ -89,8 +88,15 @@ export default class Contract {
         let self = this;
         self.flightSuretyApp.methods
             .registerAirline(applicantAirline)
-            .send({from: registeredAirline}, callback);
+            .send({from: registeredAirline, gas: 4712388, gasPrice: 100000000000}, callback);
     }
+
+    needsRegisteredAirline(callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .needsRegisteredAirline()
+          .call({ from: self.owner}, callback);
+  }
 
     // Fund Airline
     fundAirline(airline, fee, callback) {
@@ -132,14 +138,89 @@ export default class Contract {
     getAirlineStatusInfo(airline, callback) {
       let self = this;
       self.flightSuretyApp.methods
-            .getAirlineStatusInfo(airline)
-            .call({from: self.owner}, callback);
+          .getAirlineStatusInfo(airline)
+          .call({from: self.owner}, callback);
     }
 
     getNextRequiredConsensusCount(callback) {
       let self = this;
       self.flightSuretyApp.methods
-            .getNextRequiredConsensusCount()
-            .call({from: self.owner}, callback);
+          .getNextRequiredConsensusCount()
+          .call({from: self.owner}, callback);
+    }
+
+    hasVotedForAirline(registeredAirline, applicantAirline, callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .hasVotedForAirline(applicantAirline)
+          .call({from: registeredAirline}, callback);
+    }
+
+    // Vote Airline
+    voteAirline(registeredAirline, applicantAirline, callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .voteAirline(applicantAirline)
+          .send({from: registeredAirline}, callback);
+    }
+
+    //--------
+    // Flight
+    //--------
+
+    // Register
+    registerFlight(airline, flight, timestamp, callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .registerFlight(airline, flight, timestamp)
+          .send({from: self.owner, gas: 4712388, gasPrice: 100000000000}, callback);
+    }
+
+    // Get flight keys count
+    getAirlineFlightKeysCount(airline, callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .getAirlineFlightKeysCount(airline)
+          .call({from: self.owner}, callback);
+    }
+
+    // Get airline flight key
+    getAirlineFlightKey(airline, index, callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .getAirlineFlightKey(airline, index)
+          .call({from: self.owner}, callback);
+    }
+
+    // Get airline flight info
+    getAirlineFlightInfo(key, callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .getAirlineFlightInfo(key)
+          .call({from: self.owner}, callback);
+    }
+
+    //------------
+    // Passenger
+    //------------
+    buyInsurance(passenger, amount, airline, flight, timestamp, callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .buyInsurance(airline, flight, timestamp)
+          .send({from: passenger, value: amount, gas: 4712388, gasPrice: 100000000000}, callback);
+    }
+
+    checkPayoutBalance(passenger, callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .getPayoutBalance(passenger)
+          .call({from: self.owner}, callback);
+    }
+
+    withdrawPayoutBalance(passenger, callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .payInsuree()
+          .send({from: passenger, gas: 4712388, gasPrice: 100000000000}, callback);
     }
 }

@@ -263,6 +263,14 @@ contract FlightSuretyApp {
         return flightSuretyData.getRegisteredAirlinesCount();
     }
 
+    function needsRegisteredAirline()
+                        external
+                        view
+                        returns (bool) 
+    {
+        return flightSuretyData.needsRegisteredAirline();
+    }
+
     function getRegisteredAirlineStatusCode(address airline)
                         external
                         view
@@ -282,7 +290,7 @@ contract FlightSuretyApp {
     function getAirlineStatusInfo(address airline)
                         external
                         view
-                        returns (bool added, bool voted, bool funded, bool registered, uint256 votes, uint256 votesNeede) {
+                        returns (bool added, bool voted, bool funded, bool registered, uint256 votesNeeded) {
         return flightSuretyData.getAirlineStatusInfo(airline);
     }
 
@@ -293,38 +301,12 @@ contract FlightSuretyApp {
         return flightSuretyData.getNextRequiredConsensusCount();
     }
 
-    // Checks the status of airlines
-    // function isAirlineAdded(address airline)
-    //                     external
-    //                     view
-    //                     returns (bool) 
-    // {
-    //     return flightSuretyData.isAirlineAdded(airline);
-    // }
-
-    // function isAirlineVotedIn(address airline)
-    //                     external
-    //                     view
-    //                     returns (bool) 
-    // {
-    //     return flightSuretyData.isAirlineVotedIn(airline);
-    // }
-
-    // function isAirlineFunded(address airline)
-    //                     external
-    //                     view
-    //                     returns (bool) 
-    // {
-    //     return flightSuretyData.isAirlineFunded(airline);
-    // }
-
-    // function isAirlineRegistered(address airline)
-    //                     external
-    //                     view
-    //                     returns (bool) 
-    // {
-    //     return flightSuretyData.isAirlineRegistered(airline);
-    // }
+    function hasVotedForAirline (address newAirline) 
+                                external 
+                                returns(bool) 
+    {
+        return flightSuretyData.hasVotedForAirline(msg.sender, newAirline);
+    }
 
    /**
     * @dev Register a future flight for insuring.
@@ -636,18 +618,20 @@ contract FlightSuretyData {
     function isAirlineClearedForFunding (address airline) external view returns (bool);
     function getNextRequiredConsensusCount() public view returns(uint256);
     // Airline
-    function isAirline(address newAirline) external view returns (bool);
+    function isAirline(address newAirline) external view returns(bool);
     // function voteCount(address newAirline) external view returns (uint256);
     function registerAirline(address airline, address newAirline) public;
+    function needsRegisteredAirline () external returns(bool);
     //function registerAirline(address airline, address newAirline) external returns (bool success, uint256 votes);
     function voteAirline(address airline, address newAirline) external;
     function fundAirline(address airline) external;
+    function hasVotedForAirline(address airline, address newAirline) external returns(bool);
     // Flight
     function isFlight(address airline, string flight, uint256 timestamp) external view returns (bool);
     function registerFlight(address airline, string flight, uint256 timestamp, bool isRegistered, uint8 statusCode) external;
     // User
     function isUser(address passenger) external view returns (bool);
-    function isInsured(address airline, string flight, uint256 timestamp, address insuree) external view returns (bool insured);
+    function isInsured(address airline, string flight, uint256 timestamp, address insuree) external view returns(bool insured);
     function creditInsurees(address airline, string flight, uint256 timestamp) external view;
     function buy(address insuree, address airline, string flight, uint256 timestamp, uint256 amount) external;
     function pay(address insuree) external;
@@ -655,8 +639,8 @@ contract FlightSuretyData {
     function getPayoutBalance(address insuree) external view returns(uint256);
     // Debugging
     function getRegisteredAirlinesCount() public view returns (uint256);
-    function getRegisteredAirlineStatusCode(address airline) public view returns (uint8);
+    function getRegisteredAirlineStatusCode(address airline) public view returns(uint8);
     //function getRegisteredAirlineStatusCode(uint8 index) public view returns (uint8);
 
-    function getAirlineStatusInfo(address airline) external view returns (bool added, bool voted, bool funded, bool registered, uint256 votes, uint256 votesNeeded);
+    function getAirlineStatusInfo(address airline) external view returns(bool added, bool voted, bool funded, bool registered, uint256 votesNeeded);
 }

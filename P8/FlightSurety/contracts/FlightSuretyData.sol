@@ -29,19 +29,11 @@ contract FlightSuretyData {
     mapping(address => uint256) private authorizedContracts;
 
     //------------
-    // Users
-    struct User {
-        address id;
-        bool isRegistered;
-        uint256 payout;                         // Holds the total payout for the user.
-    }
-    mapping(address => User) users;
-
-    //------------
     // Airlines
     struct Airline {
         uint8 registrationCode;                 // Registration phase the airline is in.
         address[] approvedBy;                   // Registered airlines which voted for the airline.
+        bytes32[] flightKeys;   
     }
     mapping(address => Airline) airlines;       // Holds all the candidate airlines
     address[] registeredAirlines;               // Holds all registered airlines
@@ -50,12 +42,21 @@ contract FlightSuretyData {
     // Flights
     struct Flight {
         bool isRegistered;
+        string flight;
         uint8 statusCode;
-        uint256 updatedTimestamp;        
-        address airline;
+        uint256 timestamp;
     }
     // Key = hash(airline, flight, timestamp)
     mapping(bytes32 => Flight) private flights;
+
+    //------------
+    // Users
+    struct User {
+        address id;
+        bool isRegistered;
+        uint256 payout;                         // Holds the total payout for the user.
+    }
+    mapping(address => User) users;
 
     //------------
     // Insurances
@@ -67,7 +68,8 @@ contract FlightSuretyData {
     // Track all paid insurances
     // Key = hash(airline, flight, timestamp)
     mapping(bytes32 => Insurance[]) private insurances;
-                                     
+    
+                                 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -88,7 +90,8 @@ contract FlightSuretyData {
         // Create first Airline. Mark it as Added and VotedIn. Fund it later.
         airlines[firstAirline] = Airline({
             registrationCode: REGISTRATION_CODE_VOTED_IN, 
-            approvedBy: new address[](0)
+            approvedBy: new address[](0),
+            flightKeys: new bytes32[](0)
         });
     }
 
@@ -365,6 +368,8 @@ contract FlightSuretyData {
     {
         bytes32 flightKey = getFlightKey(airline, flight, timestamp);
         return flights[flightKey].isRegistered;
+        //return flights[flightKey].isRegistered;
+        //return airlines[airline].flights[]
     }
 
     /**
@@ -441,15 +446,17 @@ contract FlightSuretyData {
                                     )
                                     external 
                                     view 
-                                    returns (bool added, bool voted, bool funded, bool registered, uint256 votes, uint256 votesNeeded)
+                                    returns (bool added, bool voted, bool funded, bool registered, uint256 votesNeeded)
     {
+        bool isRegistered = isAirlineRegistered(airline);
+        votesNeeded = isRegistered ? 0 : getNextRequiredConsensusCount() - airlines[airline].approvedBy.length;
+
         return (
             isAirlineAdded(airline),
             isAirlineVotedIn(airline),
             isAirlineFunded(airline),
-            isAirlineRegistered(airline),
-            voteCount(airline),
-            getNextRequiredConsensusCount()
+            isRegistered,
+            votesNeeded
         );
     }
 
@@ -561,7 +568,8 @@ contract FlightSuretyData {
         if (registeredAirlines.length == 0) {
             airlines[newAirline] = Airline({
                 registrationCode: REGISTRATION_CODE_VOTED_IN, 
-                approvedBy: new address[](0)
+                approvedBy: new address[](0),
+                flightKeys: new bytes32[](0)
             });
 
             // success = true;
@@ -573,7 +581,8 @@ contract FlightSuretyData {
             // Mark as VotedIn by sponsor. No need for multiparty consensus yet.
             airlines[newAirline] = Airline({
                 registrationCode: REGISTRATION_CODE_VOTED_IN, 
-                approvedBy: new address[](0)
+                approvedBy: new address[](0),
+                flightKeys: new bytes32[](0)
             });
             airlines[newAirline].approvedBy.push(airline);
 
@@ -583,7 +592,8 @@ contract FlightSuretyData {
             // Mark as Added to the queue and Voted in by sponsor
             airlines[newAirline] = Airline({
                 registrationCode: REGISTRATION_CODE_ADDED_TO_QUEUE,
-                approvedBy: new address[](0)
+                approvedBy: new address[](0),
+                flightKeys: new bytes32[](0)
             });
             // 1st vote from sponsor, need to gather more votes.
             airlines[newAirline].approvedBy.push(airline);
@@ -591,6 +601,13 @@ contract FlightSuretyData {
         }
 
         //return (success, votes);
+    }
+
+    function needsRegisteredAirline ()
+                                    external
+                                    returns(bool)
+    {
+        return registeredAirlines.length >= MULTIPARTY_CONSENSUS_THRESHOLD;
     }
 
     /**
@@ -613,6 +630,16 @@ contract FlightSuretyData {
         if (airlines[newAirline].approvedBy.length >= getNextRequiredConsensusCount()) {
             airlines[newAirline].registrationCode = REGISTRATION_CODE_VOTED_IN;
         }
+    }
+
+    function hasVotedForAirline     (
+                                        address airline,
+                                        address newAirline
+                                    )
+                                    external
+                                    returns (bool)
+    {
+        return hasEntry(airlines[newAirline].approvedBy, airline);
     }
 
     /**
@@ -638,6 +665,38 @@ contract FlightSuretyData {
     // Flight functions
     //--------------------
 
+    function getAirlineFlightKeysCount  (
+                                            address airline
+                                        )
+                                        external
+                                        view
+                                        returns(uint256)
+    {
+        return airlines[airline].flightKeys.length;
+    }
+
+    function getAirlineFlightKey    (
+                                        address airline,
+                                        uint256 index
+                                    )
+                                    external
+                                    view
+                                    returns(bytes32)
+    {
+        return airlines[airline].flightKeys[index];
+    }
+
+    function getAirlineFlightInfo   (
+                                        bytes32 flightKey
+                                    )
+                                    external
+                                    view
+                                    returns(string memory flight, uint256 timestamp)
+    {
+        Flight storage flightEntry = flights[flightKey];
+        return (flightEntry.flight, flightEntry.timestamp);
+    }
+
     /**
     * @dev This registers a flight.
     */ 
@@ -657,10 +716,15 @@ contract FlightSuretyData {
 
         flights[flightKey] = Flight({
             isRegistered: isRegistered,
+            flight: flight,
             statusCode: statusCode,
-            updatedTimestamp: timestamp,
-            airline: airline
+            timestamp: timestamp
+            /*updatedTimestamp: timestamp,
+            airline: airline*/
         });
+        
+        // add a link
+        airlines[airline].flightKeys.push(flightKey);
     }
 
     //--------------------
@@ -742,7 +806,10 @@ contract FlightSuretyData {
                 
                 // Credit user account, 1.5 times the amount paid.
                 uint256 payoutAmount = paidAmount.mul(3).div(2);
-                users[insurance.buyerAddress].payout = users[insurance.buyerAddress].payout.add(payoutAmount);   
+                users[insurance.buyerAddress].payout = users[insurance.buyerAddress].payout.add(payoutAmount);
+
+                // Reset paid amount in the insurance
+                insurance.paidAmount = 0;
             }
         }
     }

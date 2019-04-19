@@ -3,16 +3,20 @@ import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
 
+var BigNumber = require('bignumber.js');
 
 (async() => {
 
     let result = null;
 
     let contract = new Contract('localhost', () => {
-        let firstAirline = contract.airlines[0];
-        let noVoteNeededCount = 4;
+        const WEI_MULTIPLE = (new BigNumber(10)).pow(18);
 
+        let firstAirline = contract.airlines[0];
+        
+        //----------------------------------------------
         function createCheckOrCrossIcon(bIsCheck) {
+        //----------------------------------------------
             let elI = document.createElement("i");
             let sCssClass = bIsCheck ? "fa fa-check" : "fa fa-times";
             let sStyle = "font-size:18px";
@@ -25,7 +29,10 @@ import './flightsurety.css';
             elI.setAttribute("style", sStyle);
             return elI;
         }
+
+        //----------------------------------------------
         function reloadAirlinesInfo() {
+        //----------------------------------------------    
             let elTable = DOM.elid('a-info-table');
             elTable.innerHTML = '';
 
@@ -36,7 +43,6 @@ import './flightsurety.css';
                     let elTh = document.createElement("TH");
                     elTh.setAttribute("scope", "row");
                     elTh.innerText = i + 1;
-                    //elTh.innerText = airline;
                     // Append head to row
                     elTr.appendChild(elTh);
                     // Added
@@ -55,17 +61,22 @@ import './flightsurety.css';
                     let elTdRegistered = document.createElement("TD");
                     elTdRegistered.appendChild(createCheckOrCrossIcon(result[3]));
                     elTr.appendChild(elTdRegistered);
+                    // Votes Needed
+                    let elTdVotesNeeded = document.createElement("TD");
+                    elTdVotesNeeded.appendChild(document.createTextNode(result[4]));
+                    elTr.appendChild(elTdVotesNeeded);
                     // Append row to table
                     elTable.appendChild(elTr);
                 });
             }    
         }
-        function refreshApplicantsList() {
-            // Get the applicant list element and populate it.
-            let $appDropdown = $("#applicant-airlines");
-            $appDropdown.empty();
-            $appDropdown.append($("<option value='-1'>SELECT ONE</option>"));
 
+        //----------------------------------------------
+        function refreshApplicantAirlineList() {
+        //----------------------------------------------    
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID("applicant-airlines");
+            
             // Populate it with airlines that's not been added yet.
             for (let i = 0; i < contract.airlines.length; i++) {
                 let airline = contract.airlines[i];
@@ -74,17 +85,143 @@ import './flightsurety.css';
                     let added = result[0];
                     if (added === false) {
                         let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
-                        $appDropdown.append($option);
+                        $dropdown.append($option);
                     }
                 });
             }
         }
-        function refreshNeedFundingAirlinesList() {
-            // Get the applicant list element and populate it.
-            let $needfundingDropdown = $("#needfunding-airlines");
-            $needfundingDropdown.empty();
-            $needfundingDropdown.append($("<option value='-1'>SELECT ONE</option>"));
 
+        //----------------------------------------------
+        function refreshRegisteredAirlineList(id) {
+        //----------------------------------------------
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID(id);
+            
+            // Populate it with airlines that's not been added yet.
+            for (let i = 0; i < contract.airlines.length; i++) {
+                let airline = contract.airlines[i];
+                let airlineIndex = i + 1;
+                contract.getAirlineStatusInfo(airline, (error, result) => {
+                    let registered = result[3];
+                    if (registered) {
+                        let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                        $dropdown.append($option);
+                    }
+                });
+            }
+        }
+
+        //----------------------------------------------
+        function refreshFlightList(id, airline) {
+        //----------------------------------------------
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID(id);
+            
+            contract.getAirlineStatusInfo(airline, (error, result) => {
+                let registered = result[3];
+                if (registered) {
+                    // Get the flightkeys count 
+                    contract.getAirlineFlightKeysCount(airline, (error, result) => {
+                        if (!error) {
+                            let count = result;
+                            for (let i = 0; i < count; i++) {
+                                contract.getAirlineFlightKey(airline, i, (error, result) => {
+                                    if (!error) {
+                                        let flightkey = result;
+                                        contract.getAirlineFlightInfo(flightkey, (error, result) => {
+                                            if (!error) {
+                                                let flight = result.flight;
+                                                let timestamp = result.timestamp;
+                                                let value = flight + "###" + timestamp;
+                                                let $option = $("<option value=" + value + ">" + flight + " - " + timestamp + "</option>");
+                                                $dropdown.append($option);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        //----------------------------------------------
+        function refreshPassengerList(id) {
+        //----------------------------------------------
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID(id);
+            
+            // Populate it with airlines that's not been added yet.
+            for (let i = 0; i < contract.passengers.length; i++) {
+                let passenger = contract.passengers[i];
+                let passengerIndex = i + 1;
+
+                let $option = $("<option value=" + passenger + ">" + passengerIndex + "</option>");
+                $dropdown.append($option);
+            }
+        }
+
+        //----------------------------------------------
+        function cleanListByID(id) {
+        //----------------------------------------------    
+            let $dropdown = $("#" + id);
+            $dropdown.empty();
+            $dropdown.append($("<option value='-1'>SELECT ONE</option>"));
+            return $dropdown;
+        }
+
+        //----------------------------------------------
+        function refreshAirlineNeedVotesList() {
+        //----------------------------------------------
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID("vote-applicant-airlines");
+            
+            // Populate it with airlines that needs votes.
+            for (let i = 0; i < contract.airlines.length; i++) {
+                let airline = contract.airlines[i];
+                let airlineIndex = i + 1;
+                contract.getAirlineStatusInfo(airline, (error, result) => {
+                    let added = result [0];
+                    let votedIn = result[1];
+                    if (added && !votedIn) {
+                        let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                        $dropdown.append($option);
+                    }
+                });
+            }
+        }
+
+        //--------------------------------------------------------------------
+        function refreshRegisteredAirlineHasNotVotedList(applicantAirline) {
+        //--------------------------------------------------------------------
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID("vote-registered-airlines");
+
+            // Populate it with airlines that needs votes.
+            for (let i = 0; i < contract.airlines.length; i++) {
+                let airline = contract.airlines[i];
+                let airlineIndex = i + 1;
+                contract.getAirlineStatusInfo(airline, (error, result) => {
+                    let registered = result[3];
+                    if (registered) {
+                        contract.hasVotedForAirline(airline, applicantAirline, (error, result) => {
+                            if (result == false) {
+                                let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                                $dropdown.append($option);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        //----------------------------------------------
+        function refreshAirlineNeedFundingList() {
+        //----------------------------------------------
+            // Get the applicant list element and populate it.
+            let $dropdown = cleanListByID("needfunding-airlines");
+            
             // Populate it with airlines that's not been added yet.
             for (let i = 0; i < contract.airlines.length; i++) {
                 let airline = contract.airlines[i];
@@ -94,37 +231,50 @@ import './flightsurety.css';
                     let funded = result[2];
                     if (voted === true && funded === false) {
                         let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
-                        $needfundingDropdown.append($option);
+                        $dropdown.append($option);
                     }
                 });
             }
         }
+
+        //----------------------------------------------
         function fundAndRegisterFirstAirline() {
+        //----------------------------------------------    
             contract.isAirlineClearedForFunding(firstAirline, (error, result) => {
                 if (result) {
-                    let fee = contract.web3.utils.toWei("10", "ether");
-
-                    contract.fundAirline(firstAirline, fee, (error, result) => {
-                        if (error)
-                            display('', '', [ { label: 'Fund Airline 1', error: error} ], false);
-                        else
-                            display('', '', [ { label: 'Fund Airline 1', value: "Successful!"} ], false);   
-                        
-                        // reload airlines info
-                        gotoAirlineInfo();           
-                    });
+                    fundAirline(firstAirline, "Airline 1");
                 } else {
                     // reload airlines info
                     gotoAirlineInfo(); 
                 }
             });
         }
+
+        //--------------------------------------------------
+        function fundAirline(airline, airlineDescription) {
+        //--------------------------------------------------
+            let fee = contract.web3.utils.toWei("10", "ether");
+
+            contract.fundAirline(airline, fee, (error, result) => {
+                if (error)
+                    display('', '', [ { label: 'Fund ' + airlineDescription, error: error} ], false);
+                else
+                    display('', '', [ { label: 'Fund ' + airlineDescription, value: "Successful!"} ], false);   
+                
+                // reload airlines info
+                gotoAirlineInfo(); 
+            });
+        }
+
+
+        //----------------------------------------------
         function gotoAirlineInfo() {
+        //----------------------------------------------
             DOM.elid('v-pills-a-info-tab').click();
         }
 
+
         fundAndRegisterFirstAirline();
-        //reloadAirlinesInfo(); 
         
 
         // Read transaction
@@ -134,14 +284,25 @@ import './flightsurety.css';
             //display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ], true);
         });
     
-        
-        // Tabs
+
+
+
+        //**********************
+        // TAB CLICK HANDLERS
+        //**********************
+
+        //-----------
+        // Airline
+        //-----------
+
+        // Info
         DOM.elid('v-pills-a-info-tab').addEventListener('click', () => {
             reloadAirlinesInfo();
         });
 
+        // Register
         DOM.elid('v-pills-a-register-tab').addEventListener('click', () => {
-            refreshApplicantsList();
+            refreshApplicantAirlineList();
 
             // Hide the registered airlines area if consensus count still zero
             contract.getNextRequiredConsensusCount((error, result) => {
@@ -159,39 +320,91 @@ import './flightsurety.css';
                 } else {
                     $regContainer.show();
 
-                    let $regDropDown = $("#registered-airlines");
-                    $regDropDown.empty();
-
-                    // Populate it with registered airlines.
-                    for (let i = 0; i < contract.airlines.length; i++) {
-                        let airline = contract.airlines[i];
-                        let airlineIndex = i + 1;
-                        contract.getAirlineStatusInfo(airline, (error, result) => {
-                            let registered = result[4];
-                            if (registered) {
-                                let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
-                                $regDropDown.append($option);
-                            }
-                        });
-                    }
+                    refreshRegisteredAirlineList("registered-airlines");
                 }
             });
         });
 
-        // Tabs
-        DOM.elid('v-pills-a-fund-tab').addEventListener('click', () => {
-            refreshNeedFundingAirlinesList();
+        // Vote
+        DOM.elid('v-pills-a-vote-tab').addEventListener('click', () => {
+            cleanListByID("vote-applicant-airlines");
+            cleanListByID("vote-registered-airlines");
+
+            refreshAirlineNeedVotesList();
         });
 
+        // Fund
+        DOM.elid('v-pills-a-fund-tab').addEventListener('click', () => {
+            refreshAirlineNeedFundingList();
+        });
 
+        //-----------
+        // Flight
+        //-----------
 
-        //---------------
-        // Airlines
-        //---------------
-        
-
+        // Header Tab
+        DOM.elid('pills-flight-tab').addEventListener('click', () => {
+            cleanListByID("fr-airlines");
+            refreshRegisteredAirlineList("fr-airlines");
+            $("#fr-flight").value = "";
+        });
 
         // Register
+        DOM.elid('v-pills-f-register-tab').addEventListener('click', () => {
+            cleanListByID("fr-airlines");
+            refreshRegisteredAirlineList("fr-airlines");
+            $("#fr-flight").value = "";
+        });
+
+        // Status
+        DOM.elid('v-pills-f-status-tab').addEventListener('click', () => {
+            // Reset and populate the airlines dropdown
+            cleanListByID("fs-airlines");
+            refreshRegisteredAirlineList("fs-airlines");
+            // Reset flights dropdown
+            cleanListByID("fs-flights");
+        });
+
+        //-----------
+        // Passenger
+        //-----------
+
+        function initPassengerMainTab() {
+            // Reset and populate the airlines dropdown
+            cleanListByID("pb-airlines");
+            refreshRegisteredAirlineList("pb-airlines");
+            // Reset flights dropdown
+            cleanListByID("pb-flights");
+            
+            // Reset and populate passengers dropdown 
+            cleanListByID("pb-passengers");
+            refreshPassengerList("pb-passengers");
+            // Reset the amounts dropdown.
+            $('#pb-amounts option:first-child').attr("selected", "selected");
+        };
+
+        // Header Tab
+        DOM.elid('pills-passenger-tab').addEventListener('click', () => {
+            initPassengerMainTab();
+        });
+
+        // Buy Insurance
+        DOM.elid('v-pills-p-buy-tab').addEventListener('click', () => {
+            initPassengerMainTab();
+        });
+
+        // Payout
+        DOM.elid('v-pills-p-payout-tab').addEventListener('click', () => {
+            // Reset and populate passengers dropdown 
+            cleanListByID("pp-passengers");
+            refreshPassengerList("pp-passengers");
+        });
+
+        //**********************
+        // BUTTON CLICK HANDLERS
+        //**********************
+
+        // Airline Register
         DOM.elid('register-airline').addEventListener('click', () => {
             let $applicantAirline = $("#applicant-airlines");
             let $registeredAirline = $("#registered-airlines");
@@ -200,140 +413,220 @@ import './flightsurety.css';
             let registeredAirline = $registeredAirline.find(':selected').val() || firstAirline;
             
             // Nothing was selected. Notify the user!
-            if (applicantAirline === "-1") {
-                display('', '', [ { label: 'Register Airline ', error: "ERROR: No Candidate Airline Selected. Please try again."} ], true);
+            if (applicantAirline === "-1" || registeredAirline === "-1") {
+                display('', '', [ { label: 'Register Airline ', error: "ERROR: No Airline Selected. Please try again."} ], true);
             } else {
                 contract.registerAirline(applicantAirline, registeredAirline, (error, result) => {
+                    let msg = 'Register Airline ' + applicantAirlineNo;
                     if (error) {
-                        display('', '', [ { label: 'Register Airline ' + applicantAirlineNo, error: error} ], true);
+                        display('', '', [ { label: msg, error: error} ], true);
                     } else {
-                        display('', '', [ { label: 'Register Airline ' + applicantAirlineNo, value: "Successful!"} ], true);
+                        display('', '', [ { label: msg, value: "Successful!"} ], true);
 
-                        // Check registered airlines count, if less than consensus fund it.
-                        // contract.getRegisteredAirlinesCount((error, result) => {
-                        //     if (error) {
-                        //         display('', '', [ { label: 'Registered Airlines Count', error: error} ], true);
-                        //     } else {
-                        //         if (result <= noVoteNeededCount) {
-                        //             let fee = contract.web3.utils.toWei("10", "ether");
-                        //             // Fund it
-                        //             contract.fundAirline(applicantAirline, fee, (error, result) => {
-                        //                 if (error) {
-                        //                     display('', '', [ { label: 'Fund Airline ' + applicantAirlineNo, error: error} ], true);
-                        //                 } else {
-                        //                     display('', '', [ { label: 'Fund Airline ' + applicantAirlineNo, value: "Successful!"} ], true);
-
-                        //                     // Go to airline info area.
-                        //                     //DOM.elid('v-pills-a-info-tab').click();
-                        //                     gotoAirlineInfo();
-                        //                 }
-                        //             });
-                        //         } else {
-                        //             // Go to airline info area.
-                        //             //DOM.elid('v-pills-a-info-tab').click();
-                        //             gotoAirlineInfo();
-                        //         }
-                        //     }
-                        // });                        
+                        contract.needsRegisteredAirline((error, result) => {
+                            if (error) {
+                                display('', '', [ { label: 'needsRegisteredAirline', error: error} ], true);
+                            } else {
+                                // Consensus is need, need to get votes first.
+                                if (result) {
+                                    // Go to airline info area.
+                                    gotoAirlineInfo();
+                                // No consensus needed, fund it.
+                                } else {
+                                    fundAirline(applicantAirline, "Airline " + applicantAirlineNo);
+                                }
+                            }
+                        });                   
                     }
                 });
             }
         });
 
-        // Vote
+        // Airline Vote
         DOM.elid('vote-airline').addEventListener('click', () => {
-            let airline = DOM.elid('v-airline').value;
-            window.alert("vote airline:" + airline);
-            //contract.registerAirline((error, result) => {
-                //display('Airlines', 'Registered Airline', [ { label: 'Count', value: result.flight + ' ' + result} ], true);
-            //});
+            let $applicantAirline = $("#vote-applicant-airlines");
+            let applicantAirlineDesc = $applicantAirline.find(':selected').text();
+            let applicantAirline = $applicantAirline.find(':selected').val();
+
+            let $registeredAirline = $("#vote-registered-airlines");
+            let registeredAirlineDesc = $registeredAirline.find(':selected').text();
+            let registeredAirline = $registeredAirline.find(':selected').val();
+            
+            if (applicantAirline === "-1" || registeredAirline === "-1") {
+                display('', '', [ { label: 'Funding Airline ', error: "ERROR: No Airline selected to be voted. Please try again."} ], true);
+            } else {
+                contract.voteAirline(registeredAirline, applicantAirline, (error, result) => {
+                    let msg = 'Airline ' + registeredAirlineDesc + ' voting for Airline ' + applicantAirlineDesc;
+                    if (error)
+                        display('', '', [ { label: msg, error: error} ], true);
+                    else 
+                        display('', '', [ { label: msg, value: "Successful!"} ], true);
+
+                    // Go to airline info area.
+                    gotoAirlineInfo();
+                });
+            }
         });
 
-        // Fund
+        // Airline Fund
         DOM.elid('fund-airline').addEventListener('click', () => {
             let $needFundingAirline = $("#needfunding-airlines");
-            let needFundingAirlineNo = $needFundingAirline.find(':selected').text();
+            let needFundingAirlineDesc = $needFundingAirline.find(':selected').text();
             let needFundingAirline = $needFundingAirline.find(':selected').val();
             let fee = contract.web3.utils.toWei("10", "ether");
 
             // Nothing was selected. Notify the user!
             if (needFundingAirline === "-1") {
-                display('', '', [ { label: 'Funding Airline ', error: "ERROR: No Airline To Be Funded Selected. Please try again."} ], true);
+                display('', '', [ { label: 'Funding Airline ', error: "ERROR: No Airline selected to be funded. Please try again."} ], true);
             } else {
                 contract.fundAirline(needFundingAirline, fee, (error, result) => {
+                    let msg = 'Fund Airline ' + needFundingAirlineDesc;
                     if (error)
-                        display('', '', [ { label: 'Fund Airline ' + needFundingAirlineNo, error: error} ], true);
+                        display('', '', [ { label: msg, error: error} ], true);
                     else 
-                        display('', '', [ { label: 'Fund Airline ' + needFundingAirlineNo, value: "Successful!"} ], true);
+                        display('', '', [ { label: msg, value: "Successful!"} ], true);
 
                     // Go to airline info area.
                     gotoAirlineInfo();
-                    //DOM.elid('v-pills-a-info-tab').click();
                 });
             }
-
-
-
-            // let airline = DOM.elid('f-airline').value;
-            // let fee = contract.web3.utils.toWei("10", "ether");
-            // window.alert(airline + " " + fee);
-
-            // contract.fundAirline(airline, fee, (error, result) => {
-            //     display('Airlines', 'Fund Airline', [ { label: 'Fund Result', error: error, value: result} ], true);
-            // });
         });
 
-        // Debug
-        // DOM.elid('get-airlines-count').addEventListener('click', () => {
-        //     contract.getRegisteredAirlinesCount((error, result) => {
-        //         display('Airlines', 'Registered Airlines Count', [ { label: 'Count', value: result} ], true);
-        //     });
-        // });
+        // Flight Register
+        DOM.elid('fr-register-button').addEventListener('click', () => {
+            let $dropdown = $("#fr-airlines");
+            let airlineDesc = $dropdown.find(':selected').text();
+            let airline = $dropdown.find(':selected').val();
+            let flight = $("#fr-flight")[0].value;
+            let timestamp = 1;
+            
+            contract.registerFlight(airline, flight, timestamp, (error, result) => {
+                let msg = 'Register Flight ' + airlineDesc;
+                if (error)
+                    display('', '', [ { label: msg, error: error} ], true);
+                else 
+                    display('', '', [ { label: msg, value: "Successful!"} ], true);
+            });
+        });
 
-        // DOM.elid('get-airline-status-code').addEventListener('click', () => {
-        //     let airline = DOM.elid('d-airline').value;
-        //     contract.getRegisteredAirlineStatusCode(airline, (error, result) => {
-        //         let statusCode = "";
-        //         switch(result) {
-        //             case "1":
-        //                 statusCode = "Added to Queue";
-        //                 break;
-        //             case "2":
-        //                 statusCode = "Voted In";
-        //                 break;
-        //             case "3":
-        //                 statusCode = "Funded";
-        //                 break;
-        //             case "4":
-        //                 statusCode = "Registered";
-        //                 break;    
-        //             default:
-        //                 statusCode = "Unknown";
-        //         }
-        //         display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: statusCode} ], true);
-        //     });
-        // });
-
-        // DOM.elid('get-cleared-for-funding').addEventListener('click', () => {
-        //     let airline = DOM.elid('d-airline').value;
-        //     contract.isAirlineClearedForFunding(airline, (error, result) => {
-        //         display('Airlines', 'Funding', [ { label: 'Is cleared for funding?', error: error, value: result} ], true);
-        //     });
-        // });
-
+        // Flight Status
 
         // User-submitted transaction
-        DOM.elid('submit-oracle').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
+        DOM.elid('fs-submit-oracle-button').addEventListener('click', () => {
+            // airline
+            let $airlines = $("#fs-airlines");
+            let airline = $airlines.find(':selected').val();
+            let airlineDesc = $airlines.find(':selected').text();
+            // flight
+            let flightInfo = $("#fs-flights").find(':selected').val();
+            let flightDesc = $("#fs-flights").find(':selected').text();
+            var aFlightInfo = flightInfo.split("###");
+            let flight = aFlightInfo[0];
+            let timestamp = aFlightInfo[1];
+            //let flight = DOM.elid('flight-number').value;
+
             // Write transaction
-            contract.fetchFlightStatus(flight, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ], true);
+            contract.fetchFlightStatus(airline, flight, timestamp, (error, result) => {
+                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: 'airline: ' + result.airline + ', flight:' + result.flight + ', timestamp:' + result.timestamp} ], true);
             });
-        })
-    
+        });
+
+        // Flight Insurance Buy
+        DOM.elid('pb-buy-button').addEventListener('click', () => {
+            // passenger
+            let $passengers = $("#pb-passengers");
+            let passenger = $passengers.find(':selected').val();
+            let passengerDesc = $passengers.find(':selected').text();
+            // airline
+            let $airlines = $("#pb-airlines");
+            let airline = $airlines.find(':selected').val();
+            let airlineDesc = $airlines.find(':selected').text();
+            // flight
+            let flightInfo = $("#pb-flights").find(':selected').val();
+            let flightDesc = $("#pb-flights").find(':selected').text();
+            var aFlightInfo = flightInfo.split("###");
+            let flight = aFlightInfo[0];
+            let timestamp = aFlightInfo[1];
+            // amount
+            let amount = $("#pb-amounts").find(':selected').val();
+            let amountInWei = amount * WEI_MULTIPLE;
+            
+            if (airline === "-1" || passenger === "-1" || flightInfo === "-1" || amount === "-1") {
+                display('', '', [ { label: 'Buy Insurance ', error: "ERROR: Missing info. Please provide necessary information."} ], true);
+            } else {
+                contract.buyInsurance(passenger, amountInWei, airline, flight, timestamp, (error, result) => {
+                    let msg = "Buy Insurance, Airline " + airlineDesc + " Flight " + flightDesc + " was bought by Passenger " + passengerDesc + " for " + amount;
+                    if (error)
+                        display('', '', [ { label: msg, error: error} ], true);
+                    else 
+                        display('', '', [ { label: msg, value: "Successful!"} ], true);
+                });
+            }
+        });
+
+        // Passenger > Payout > Check Payout button
+        DOM.elid('pp-check-button').addEventListener('click', () => {
+            // passenger
+            let $passengers = $("#pp-passengers");
+            let passenger = $passengers.find(':selected').val();
+            let passengerDesc = $passengers.find(':selected').text();
+
+            if (passenger === "-1") {
+                display('', '', [ { label: 'Check Payout ', error: "ERROR: Please select a passenger"} ], true);
+            } else {
+                contract.checkPayoutBalance(passenger, (error, result) => {
+                    let msg = "Check Payout, Passenger " + passengerDesc + " has " + result + " payout balance";
+                    if (error)
+                        display('', '', [ { label: msg, error: error} ], true);
+                    else 
+                        display('', '', [ { label: msg, value: "Successful!"} ], true);
+                });
+            }
+        });
+
+        // Passenger > Payout > Withdraw Payout button
+        DOM.elid('pp-withdraw-button').addEventListener('click', () => {
+            // passenger
+            let $passengers = $("#pp-passengers");
+            let passenger = $passengers.find(':selected').val();
+            let passengerDesc = $passengers.find(':selected').text();
+
+            if (passenger === "-1") {
+                display('', '', [ { label: 'Check Payout ', error: "ERROR: Please select a passenger"} ], true);
+            } else {
+                contract.withdrawPayoutBalance(passenger, (error, result) => {
+                    let msg = "Withdraw Payout, Passenger " + passengerDesc;
+                    if (error)
+                        display('', '', [ { label: msg, error: error} ], true);
+                    else 
+                        display('', '', [ { label: msg, value: "Successful!"} ], true);
+                });
+            }
+        });
+
+        //**********************
+        // CHANGE HANDLERS
+        //**********************
+
+        // Airline > Vote: Applicant Airlines
+        $("#vote-applicant-airlines").change(function() {
+            let applicantAirline = this.value;
+            refreshRegisteredAirlineHasNotVotedList(applicantAirline);
+        });
+
+        // Passenger > Buy: Flight List
+        $("#pb-airlines").change(function() {
+            let airline = this.value;
+            refreshFlightList('pb-flights', airline);
+        });
+
+        // Flight > Status: Flight List
+        $("#fs-airlines").change(function() {
+            let airline = this.value;
+           refreshFlightList('fs-flights', airline);
+        });
     });
     
-
 })();
 
 
