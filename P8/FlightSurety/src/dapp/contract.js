@@ -68,92 +68,16 @@ export default class Contract {
             .call({ from: self.owner}, callback);
     }
 
-    fetchFlightStatus(airline, flight, timestamp, callback) {
-        let self = this;
-        let payload = {
-          airline: airline,
-          flight: flight,
-          timestamp: timestamp
-        };
-
-        self.flightSuretyApp.methods
-            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-            .send({from: self.owner}, (error, result) => {
-                callback(error, payload);
-            });
-    }
-
+    //------------
+    // Airline
+    //------------
+    
     // Register Airline
     registerAirline(applicantAirline, registeredAirline, callback) {
         let self = this;
         self.flightSuretyApp.methods
             .registerAirline(applicantAirline)
             .send({from: registeredAirline, gas: 4712388, gasPrice: 100000000000}, callback);
-    }
-
-    needsRegisteredAirline(callback) {
-      let self = this;
-      self.flightSuretyApp.methods
-          .needsRegisteredAirline()
-          .call({ from: self.owner}, callback);
-  }
-
-    // Fund Airline
-    fundAirline(airline, fee, callback) {
-        let self = this;
-        self.flightSuretyApp.methods
-            .fund()
-            .send({from: airline, value: fee}, callback);
-    }
-
-    // Fund Airline
-    isAirlineClearedForFunding(airline, callback) {
-        let self = this;
-        self.flightSuretyApp.methods
-            .isAirlineClearedForFunding(airline)
-            .call({from: self.owner}, callback);
-    }
-
-    getRegisteredAirlinesCount(callback) {
-        let self = this;
-        self.flightSuretyApp.methods
-            .getRegisteredAirlinesCount()
-            .call({from: self.owner}, callback);
-    }
-
-    getRegisteredAirlineStatusCode(index, callback) {
-        let self = this;
-        self.flightSuretyApp.methods
-            .getRegisteredAirlineStatusCode(index)
-            .call({from: self.owner}, callback);
-    }
-
-    getAirlines(statusCode, callback) {
-      let self = this;
-      self.flightSuretyApp.methods
-          .getAirlines()
-          .call({from: self.owner}, callback);
-    }
-
-    getAirlineStatusInfo(airline, callback) {
-      let self = this;
-      self.flightSuretyApp.methods
-          .getAirlineStatusInfo(airline)
-          .call({from: self.owner}, callback);
-    }
-
-    getNextRequiredConsensusCount(callback) {
-      let self = this;
-      self.flightSuretyApp.methods
-          .getNextRequiredConsensusCount()
-          .call({from: self.owner}, callback);
-    }
-
-    hasVotedForAirline(registeredAirline, applicantAirline, callback) {
-      let self = this;
-      self.flightSuretyApp.methods
-          .hasVotedForAirline(applicantAirline)
-          .call({from: registeredAirline}, callback);
     }
 
     // Vote Airline
@@ -164,9 +88,59 @@ export default class Contract {
           .send({from: registeredAirline}, callback);
     }
 
-    //--------
+    // Fund Airline
+    fundAirline(airline, fee, callback) {
+        let self = this;
+        self.flightSuretyApp.methods
+            .fund()
+            .send({from: airline, value: fee}, callback);
+    }
+
+    //--- Utilities ---
+    
+    // Is Airline cleared for funding
+    isAirlineClearedForFunding(airline, callback) {
+        let self = this;
+        self.flightSuretyData.methods
+            .isAirlineClearedForFunding(airline)
+            .call({from: self.owner}, callback);
+    }
+
+    // Does airline need a registered airline for registration?
+    needsRegisteredAirline(callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .needsRegisteredAirline()
+          .call({ from: self.owner}, callback);
+    }
+
+    // Gets airline status info
+    getAirlineStatusInfo(airline, callback) {
+      let self = this;
+      self.flightSuretyApp.methods
+          .getAirlineStatusInfo(airline)
+          .call({from: self.owner}, callback);
+    }
+
+    // Checks the next consensus count.
+    getNextRequiredConsensusCount(callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .getNextRequiredConsensusCount()
+          .call({from: self.owner}, callback);
+    }
+
+    // Checks if the airline has already voted for the applicant airline
+    hasVotedForAirline(registeredAirline, applicantAirline, callback) {
+      let self = this;
+      self.flightSuretyData.methods
+          .hasVotedForAirline(registeredAirline, applicantAirline)
+          .call({from: self.owner}, callback);
+    }
+
+    //------------
     // Flight
-    //--------
+    //------------
 
     // Register
     registerFlight(airline, flight, timestamp, callback) {
@@ -175,6 +149,24 @@ export default class Contract {
           .registerFlight(airline, flight, timestamp)
           .send({from: self.owner, gas: 4712388, gasPrice: 100000000000}, callback);
     }
+
+    // Simulate Flight Status
+    fetchFlightStatus(airline, flight, timestamp, callback) {
+      let self = this;
+      let payload = {
+        airline: airline,
+        flight: flight,
+        timestamp: timestamp
+      };
+
+      self.flightSuretyApp.methods
+          .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
+          .send({from: self.owner}, (error, result) => {
+              callback(error, payload);
+          });
+    }
+
+    //--- Utilities ---
 
     // Get flight keys count
     getAirlineFlightKeysCount(airline, callback) {
@@ -203,6 +195,8 @@ export default class Contract {
     //------------
     // Passenger
     //------------
+
+    // Buy Insurance
     buyInsurance(passenger, amount, airline, flight, timestamp, callback) {
       let self = this;
       self.flightSuretyApp.methods
@@ -210,6 +204,7 @@ export default class Contract {
           .send({from: passenger, value: amount, gas: 4712388, gasPrice: 100000000000}, callback);
     }
 
+    // Check payout
     checkPayoutBalance(passenger, callback) {
       let self = this;
       self.flightSuretyData.methods
@@ -217,6 +212,7 @@ export default class Contract {
           .call({from: self.owner}, callback);
     }
 
+    // Withdraw payout
     withdrawPayoutBalance(passenger, callback) {
       let self = this;
       self.flightSuretyApp.methods

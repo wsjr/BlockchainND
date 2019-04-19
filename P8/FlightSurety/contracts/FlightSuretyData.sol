@@ -333,15 +333,7 @@ contract FlightSuretyData {
         return registeredAirlines.length;
     }
 
-    function getRegisteredAirlineStatusCode(/*uint8 index*/ address airline)
-                                        public
-                                        view
-                                        returns (uint8)
-    {
-        return airlines[airline].registrationCode;
-    }
-
-/**
+    /**
     * @dev Returns true if airline is registered. Otherwise, false.
     */ 
     function isAirline      (
@@ -368,8 +360,6 @@ contract FlightSuretyData {
     {
         bytes32 flightKey = getFlightKey(airline, flight, timestamp);
         return flights[flightKey].isRegistered;
-        //return flights[flightKey].isRegistered;
-        //return airlines[airline].flights[]
     }
 
     /**
@@ -401,6 +391,9 @@ contract FlightSuretyData {
         return airlines[airline].registrationCode == REGISTRATION_CODE_VOTED_IN;
     }
 
+    /**
+     * @dev Returns boolean indicating whether an airline has been added to the queue or not.
+     */
     function isAirlineAdded         (
                                         address airline
                                     ) 
@@ -411,6 +404,9 @@ contract FlightSuretyData {
         return airlines[airline].registrationCode >= REGISTRATION_CODE_ADDED_TO_QUEUE;
     }
 
+    /**
+     * @dev Returns boolean indicating whether an airline has been voted in (ie, received enough votes).
+     */
     function isAirlineVotedIn       (
                                         address airline
                                     ) 
@@ -421,6 +417,9 @@ contract FlightSuretyData {
          return airlines[airline].registrationCode >= REGISTRATION_CODE_VOTED_IN;
     }
 
+    /**
+     * @dev Returns boolean indicating whether an airline has been funded or not.
+     */
     function isAirlineFunded        (
                                         address airline
                                     ) 
@@ -431,6 +430,9 @@ contract FlightSuretyData {
         return airlines[airline].registrationCode >= REGISTRATION_CODE_FUNDED;
     }
 
+    /**
+     * @dev Returns boolean indicating whether an airline has been registered or not.
+     */
     function isAirlineRegistered    (
                                         address airline
                                     ) 
@@ -441,6 +443,11 @@ contract FlightSuretyData {
         return airlines[airline].registrationCode == REGISTRATION_CODE_REGISTERED;
     }
 
+    /**
+     * @dev Returns array of booleans and number indicating indicating whether an airline has been 
+     *      added, votedin, funded, registered and the number of votes number before it can proceed
+     *      with the registration.
+     */
     function getAirlineStatusInfo   (
                                         address airline
                                     )
@@ -486,7 +493,7 @@ contract FlightSuretyData {
         return users[insuree].payout;
     }
 
-/**
+    /**
     * @dev Returns true if passenger is insured. Otherwise, false.
     *
     */ 
@@ -560,7 +567,6 @@ contract FlightSuretyData {
                             public
                             requireRegisteredAirline(airline) 
                             requireNewAirline(newAirline)
-                            //returns (bool success, uint256 votes)
     {
         // Rules for registering an airline:
         
@@ -571,9 +577,6 @@ contract FlightSuretyData {
                 approvedBy: new address[](0),
                 flightKeys: new bytes32[](0)
             });
-
-            // success = true;
-            // votes = 0;
 
         // Rule #2: Only existing airline may register a new airline until there are 
         //          atleast 4 airlines registered.
@@ -597,14 +600,16 @@ contract FlightSuretyData {
             });
             // 1st vote from sponsor, need to gather more votes.
             airlines[newAirline].approvedBy.push(airline);
-            //votes = 1;
         }
-
-        //return (success, votes);
     }
 
+    /**
+    * @dev Returns boolean indicating whether an airline needs a registered airline to proceed with
+    *       the registration process.
+    */ 
     function needsRegisteredAirline ()
                                     external
+                                    view
                                     returns(bool)
     {
         return registeredAirlines.length >= MULTIPARTY_CONSENSUS_THRESHOLD;
@@ -632,11 +637,16 @@ contract FlightSuretyData {
         }
     }
 
+    /**
+    * @dev Returns boolean indicating whether a registered airline has already voted for the applicant
+    *       airline or not.
+    */
     function hasVotedForAirline     (
                                         address airline,
                                         address newAirline
                                     )
                                     external
+                                    view
                                     returns (bool)
     {
         return hasEntry(airlines[newAirline].approvedBy, airline);
@@ -665,6 +675,9 @@ contract FlightSuretyData {
     // Flight functions
     //--------------------
 
+    /**
+    * @dev Returns the number of flight keys that an airline is associated with.
+    */
     function getAirlineFlightKeysCount  (
                                             address airline
                                         )
@@ -675,6 +688,9 @@ contract FlightSuretyData {
         return airlines[airline].flightKeys.length;
     }
 
+    /**
+    * @dev Returns the flight key based on the airline and index.
+    */
     function getAirlineFlightKey    (
                                         address airline,
                                         uint256 index
@@ -686,6 +702,9 @@ contract FlightSuretyData {
         return airlines[airline].flightKeys[index];
     }
 
+    /**
+    * @dev Returns the flight and index based on the flightKey provided.
+    */
     function getAirlineFlightInfo   (
                                         bytes32 flightKey
                                     )
@@ -719,8 +738,6 @@ contract FlightSuretyData {
             flight: flight,
             statusCode: statusCode,
             timestamp: timestamp
-            /*updatedTimestamp: timestamp,
-            airline: airline*/
         });
         
         // add a link
@@ -850,7 +867,5 @@ contract FlightSuretyData {
     {
         fund();
     }
-
-
 }
 

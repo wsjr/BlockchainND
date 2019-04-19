@@ -14,6 +14,34 @@ var BigNumber = require('bignumber.js');
 
         let firstAirline = contract.airlines[0];
         
+        // Fund and register first airline
+        fundAndRegisterFirstAirline();
+        
+        // Read transaction
+        contract.isOperational((error, result) => {
+            console.log(error,result);
+            display("", "", [ { label: 'Operational Status', error: error, value: result} ], true);
+        });
+
+        //----------------------------------------------
+        function fundAndRegisterFirstAirline() {
+        //----------------------------------------------    
+            contract.isAirlineClearedForFunding(firstAirline, (error, result) => {
+                if (result) {
+                    fundAirline(firstAirline, "Airline 1");
+                } else {
+                    // reload airlines info
+                    gotoAirlineInfo(); 
+                }
+            });
+        }
+
+        //----------------------------------------------
+        function gotoAirlineInfo() {
+        //----------------------------------------------
+            DOM.elid('v-pills-a-info-tab').click();
+        }
+
         //----------------------------------------------
         function createCheckOrCrossIcon(bIsCheck) {
         //----------------------------------------------
@@ -33,7 +61,7 @@ var BigNumber = require('bignumber.js');
         //----------------------------------------------
         function reloadAirlinesInfo() {
         //----------------------------------------------    
-            let elTable = DOM.elid('a-info-table');
+            let elTable = DOM.elid('ai-table');
             elTable.innerHTML = '';
 
             for (let i = 0; i < contract.airlines.length; i++) {
@@ -72,10 +100,19 @@ var BigNumber = require('bignumber.js');
         }
 
         //----------------------------------------------
-        function refreshApplicantAirlineList() {
+        function cleanListByID(id) {
+        //----------------------------------------------    
+            let $dropdown = $("#" + id);
+            $dropdown.empty();
+            $dropdown.append($("<option value='-1'>SELECT ONE</option>"));
+            return $dropdown;
+        }
+
+        //----------------------------------------------
+        function refreshAirlineList() {
         //----------------------------------------------    
             // Get the applicant list element and populate it.
-            let $dropdown = cleanListByID("applicant-airlines");
+            let $dropdown = cleanListByID("ar-airlines");
             
             // Populate it with airlines that's not been added yet.
             for (let i = 0; i < contract.airlines.length; i++) {
@@ -84,7 +121,7 @@ var BigNumber = require('bignumber.js');
                 contract.getAirlineStatusInfo(airline, (error, result) => {
                     let added = result[0];
                     if (added === false) {
-                        let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                        let $option = $("<option value='" + airline + "'>" + airlineIndex + "</option>");
                         $dropdown.append($option);
                     }
                 });
@@ -104,7 +141,7 @@ var BigNumber = require('bignumber.js');
                 contract.getAirlineStatusInfo(airline, (error, result) => {
                     let registered = result[3];
                     if (registered) {
-                        let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                        let $option = $("<option value='" + airline + "'>" + airlineIndex + "</option>");
                         $dropdown.append($option);
                     }
                 });
@@ -133,7 +170,7 @@ var BigNumber = require('bignumber.js');
                                                 let flight = result.flight;
                                                 let timestamp = result.timestamp;
                                                 let value = flight + "###" + timestamp;
-                                                let $option = $("<option value=" + value + ">" + flight + " - " + timestamp + "</option>");
+                                                let $option = $("<option value='" + value + "'>" + flight + " - " + timestamp + "</option>");
                                                 $dropdown.append($option);
                                             }
                                         });
@@ -157,25 +194,16 @@ var BigNumber = require('bignumber.js');
                 let passenger = contract.passengers[i];
                 let passengerIndex = i + 1;
 
-                let $option = $("<option value=" + passenger + ">" + passengerIndex + "</option>");
+                let $option = $("<option value='" + passenger + "'>" + passengerIndex + "</option>");
                 $dropdown.append($option);
             }
-        }
-
-        //----------------------------------------------
-        function cleanListByID(id) {
-        //----------------------------------------------    
-            let $dropdown = $("#" + id);
-            $dropdown.empty();
-            $dropdown.append($("<option value='-1'>SELECT ONE</option>"));
-            return $dropdown;
         }
 
         //----------------------------------------------
         function refreshAirlineNeedVotesList() {
         //----------------------------------------------
             // Get the applicant list element and populate it.
-            let $dropdown = cleanListByID("vote-applicant-airlines");
+            let $dropdown = cleanListByID("av-airlines");
             
             // Populate it with airlines that needs votes.
             for (let i = 0; i < contract.airlines.length; i++) {
@@ -185,7 +213,7 @@ var BigNumber = require('bignumber.js');
                     let added = result [0];
                     let votedIn = result[1];
                     if (added && !votedIn) {
-                        let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                        let $option = $("<option value='" + airline + "'>" + airlineIndex + "</option>");
                         $dropdown.append($option);
                     }
                 });
@@ -196,7 +224,7 @@ var BigNumber = require('bignumber.js');
         function refreshRegisteredAirlineHasNotVotedList(applicantAirline) {
         //--------------------------------------------------------------------
             // Get the applicant list element and populate it.
-            let $dropdown = cleanListByID("vote-registered-airlines");
+            let $dropdown = cleanListByID("av-registered-airlines");
 
             // Populate it with airlines that needs votes.
             for (let i = 0; i < contract.airlines.length; i++) {
@@ -207,7 +235,7 @@ var BigNumber = require('bignumber.js');
                     if (registered) {
                         contract.hasVotedForAirline(airline, applicantAirline, (error, result) => {
                             if (result == false) {
-                                let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                                let $option = $("<option value='" + airline + "'>" + airlineIndex + "</option>");
                                 $dropdown.append($option);
                             }
                         });
@@ -220,7 +248,7 @@ var BigNumber = require('bignumber.js');
         function refreshAirlineNeedFundingList() {
         //----------------------------------------------
             // Get the applicant list element and populate it.
-            let $dropdown = cleanListByID("needfunding-airlines");
+            let $dropdown = cleanListByID("af-airlines");
             
             // Populate it with airlines that's not been added yet.
             for (let i = 0; i < contract.airlines.length; i++) {
@@ -230,24 +258,11 @@ var BigNumber = require('bignumber.js');
                     let voted = result[1];
                     let funded = result[2];
                     if (voted === true && funded === false) {
-                        let $option = $("<option value=" + airline + ">" + airlineIndex + "</option>");
+                        let $option = $("<option value='" + airline + "'>" + airlineIndex + "</option>");
                         $dropdown.append($option);
                     }
                 });
             }
-        }
-
-        //----------------------------------------------
-        function fundAndRegisterFirstAirline() {
-        //----------------------------------------------    
-            contract.isAirlineClearedForFunding(firstAirline, (error, result) => {
-                if (result) {
-                    fundAirline(firstAirline, "Airline 1");
-                } else {
-                    // reload airlines info
-                    gotoAirlineInfo(); 
-                }
-            });
         }
 
         //--------------------------------------------------
@@ -266,30 +281,11 @@ var BigNumber = require('bignumber.js');
             });
         }
 
-
-        //----------------------------------------------
-        function gotoAirlineInfo() {
-        //----------------------------------------------
-            DOM.elid('v-pills-a-info-tab').click();
-        }
-
-
-        fundAndRegisterFirstAirline();
-        
-
-        // Read transaction
-        contract.isOperational((error, result) => {
-            console.log(error,result);
-            display("", "", [ { label: 'Operational Status', error: error, value: result} ], true);
-            //display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ], true);
-        });
-    
-
-
-
-        //**********************
+        //********************************************
+        //
         // TAB CLICK HANDLERS
-        //**********************
+        //
+        //********************************************
 
         //-----------
         // Airline
@@ -302,7 +298,7 @@ var BigNumber = require('bignumber.js');
 
         // Register
         DOM.elid('v-pills-a-register-tab').addEventListener('click', () => {
-            refreshApplicantAirlineList();
+            refreshAirlineList();
 
             // Hide the registered airlines area if consensus count still zero
             contract.getNextRequiredConsensusCount((error, result) => {
@@ -312,7 +308,7 @@ var BigNumber = require('bignumber.js');
                 // Ensure result in desired integer state.
                 result = parseInt(result);
 
-                let $regContainer = $("#registered-airlines-group");
+                let $regContainer = $("#ar-registered-airlines-group");
 
                 // Hide registered airlines group if no registered airlines exists.
                 if (result === 0) {
@@ -320,15 +316,15 @@ var BigNumber = require('bignumber.js');
                 } else {
                     $regContainer.show();
 
-                    refreshRegisteredAirlineList("registered-airlines");
+                    refreshRegisteredAirlineList("ar-registered-airlines");
                 }
             });
         });
 
         // Vote
         DOM.elid('v-pills-a-vote-tab').addEventListener('click', () => {
-            cleanListByID("vote-applicant-airlines");
-            cleanListByID("vote-registered-airlines");
+            cleanListByID("av-airlines");
+            cleanListByID("av-registered-airlines");
 
             refreshAirlineNeedVotesList();
         });
@@ -356,8 +352,8 @@ var BigNumber = require('bignumber.js');
             $("#fr-flight").value = "";
         });
 
-        // Status
-        DOM.elid('v-pills-f-status-tab').addEventListener('click', () => {
+        // Simulate
+        DOM.elid('v-pills-f-simulate-tab').addEventListener('click', () => {
             // Reset and populate the airlines dropdown
             cleanListByID("fs-airlines");
             refreshRegisteredAirlineList("fs-airlines");
@@ -400,24 +396,26 @@ var BigNumber = require('bignumber.js');
             refreshPassengerList("pp-passengers");
         });
 
-        //**********************
+        //********************************************
+        //
         // BUTTON CLICK HANDLERS
-        //**********************
+        //
+        //********************************************
 
         // Airline Register
-        DOM.elid('register-airline').addEventListener('click', () => {
-            let $applicantAirline = $("#applicant-airlines");
-            let $registeredAirline = $("#registered-airlines");
-            let applicantAirlineNo = $applicantAirline.find(':selected').text();
-            let applicantAirline = $applicantAirline.find(':selected').val();
-            let registeredAirline = $registeredAirline.find(':selected').val() || firstAirline;
+        DOM.elid('ar-register-button').addEventListener('click', () => {
+            let $airlines = $("#ar-airlines");
+            let $registeredAirlines = $("#ar-registered-airlines");
+            let airlineDesc = $airlines.find(':selected').text();
+            let airline = $airlines.find(':selected').val();
+            let registeredAirline = $registeredAirlines.find(':selected').val() || firstAirline;
             
             // Nothing was selected. Notify the user!
-            if (applicantAirline === "-1" || registeredAirline === "-1") {
+            if (airline === "-1" || registeredAirline === "-1") {
                 display('', '', [ { label: 'Register Airline ', error: "ERROR: No Airline Selected. Please try again."} ], true);
             } else {
-                contract.registerAirline(applicantAirline, registeredAirline, (error, result) => {
-                    let msg = 'Register Airline ' + applicantAirlineNo;
+                contract.registerAirline(airline, registeredAirline, (error, result) => {
+                    let msg = 'Register Airline ' + airlineDesc;
                     if (error) {
                         display('', '', [ { label: msg, error: error} ], true);
                     } else {
@@ -433,7 +431,7 @@ var BigNumber = require('bignumber.js');
                                     gotoAirlineInfo();
                                 // No consensus needed, fund it.
                                 } else {
-                                    fundAirline(applicantAirline, "Airline " + applicantAirlineNo);
+                                    fundAirline(airline, "Airline " + airlineDesc);
                                 }
                             }
                         });                   
@@ -443,20 +441,20 @@ var BigNumber = require('bignumber.js');
         });
 
         // Airline Vote
-        DOM.elid('vote-airline').addEventListener('click', () => {
-            let $applicantAirline = $("#vote-applicant-airlines");
-            let applicantAirlineDesc = $applicantAirline.find(':selected').text();
-            let applicantAirline = $applicantAirline.find(':selected').val();
+        DOM.elid('av-vote-button').addEventListener('click', () => {
+            let $airlines = $("#av-airlines");
+            let airlineDesc = $airlines.find(':selected').text();
+            let airline = $airlines.find(':selected').val();
 
-            let $registeredAirline = $("#vote-registered-airlines");
-            let registeredAirlineDesc = $registeredAirline.find(':selected').text();
-            let registeredAirline = $registeredAirline.find(':selected').val();
+            let $registeredAirlines = $("#av-registered-airlines");
+            let registeredAirlineDesc = $registeredAirlines.find(':selected').text();
+            let registeredAirline = $registeredAirlines.find(':selected').val();
             
-            if (applicantAirline === "-1" || registeredAirline === "-1") {
+            if (airline === "-1" || registeredAirline === "-1") {
                 display('', '', [ { label: 'Funding Airline ', error: "ERROR: No Airline selected to be voted. Please try again."} ], true);
             } else {
-                contract.voteAirline(registeredAirline, applicantAirline, (error, result) => {
-                    let msg = 'Airline ' + registeredAirlineDesc + ' voting for Airline ' + applicantAirlineDesc;
+                contract.voteAirline(registeredAirline, airline, (error, result) => {
+                    let msg = 'Airline ' + registeredAirlineDesc + ' voting for Airline ' + airlineDesc;
                     if (error)
                         display('', '', [ { label: msg, error: error} ], true);
                     else 
@@ -469,18 +467,18 @@ var BigNumber = require('bignumber.js');
         });
 
         // Airline Fund
-        DOM.elid('fund-airline').addEventListener('click', () => {
-            let $needFundingAirline = $("#needfunding-airlines");
-            let needFundingAirlineDesc = $needFundingAirline.find(':selected').text();
-            let needFundingAirline = $needFundingAirline.find(':selected').val();
+        DOM.elid('af-fund-button').addEventListener('click', () => {
+            let $airlines = $("#af-airlines");
+            let airlineDesc = $airlines.find(':selected').text();
+            let airline = $airlines.find(':selected').val();
             let fee = contract.web3.utils.toWei("10", "ether");
 
             // Nothing was selected. Notify the user!
-            if (needFundingAirline === "-1") {
+            if (airline === "-1") {
                 display('', '', [ { label: 'Funding Airline ', error: "ERROR: No Airline selected to be funded. Please try again."} ], true);
             } else {
-                contract.fundAirline(needFundingAirline, fee, (error, result) => {
-                    let msg = 'Fund Airline ' + needFundingAirlineDesc;
+                contract.fundAirline(airline, fee, (error, result) => {
+                    let msg = 'Fund Airline ' + airlineDesc;
                     if (error)
                         display('', '', [ { label: msg, error: error} ], true);
                     else 
@@ -498,10 +496,10 @@ var BigNumber = require('bignumber.js');
             let airlineDesc = $dropdown.find(':selected').text();
             let airline = $dropdown.find(':selected').val();
             let flight = $("#fr-flight")[0].value;
-            let timestamp = 1;
+            let timestamp = Date.now();
             
             contract.registerFlight(airline, flight, timestamp, (error, result) => {
-                let msg = 'Register Flight ' + airlineDesc;
+                let msg = 'Register Airline ' + airlineDesc + ' Flight ' + airlineDesc + " - " + timestamp;
                 if (error)
                     display('', '', [ { label: msg, error: error} ], true);
                 else 
@@ -509,7 +507,7 @@ var BigNumber = require('bignumber.js');
             });
         });
 
-        // Flight Status
+        // Flight Simulation
 
         // User-submitted transaction
         DOM.elid('fs-submit-oracle-button').addEventListener('click', () => {
@@ -523,7 +521,6 @@ var BigNumber = require('bignumber.js');
             var aFlightInfo = flightInfo.split("###");
             let flight = aFlightInfo[0];
             let timestamp = aFlightInfo[1];
-            //let flight = DOM.elid('flight-number').value;
 
             // Write transaction
             contract.fetchFlightStatus(airline, flight, timestamp, (error, result) => {
@@ -555,7 +552,7 @@ var BigNumber = require('bignumber.js');
                 display('', '', [ { label: 'Buy Insurance ', error: "ERROR: Missing info. Please provide necessary information."} ], true);
             } else {
                 contract.buyInsurance(passenger, amountInWei, airline, flight, timestamp, (error, result) => {
-                    let msg = "Buy Insurance, Airline " + airlineDesc + " Flight " + flightDesc + " was bought by Passenger " + passengerDesc + " for " + amount;
+                    let msg = "Buy Insurance, Airline " + airlineDesc + " Flight " + flightDesc + " was bought by Passenger " + passengerDesc + " for " + amount + " ETH.";
                     if (error)
                         display('', '', [ { label: msg, error: error} ], true);
                     else 
@@ -575,7 +572,7 @@ var BigNumber = require('bignumber.js');
                 display('', '', [ { label: 'Check Payout ', error: "ERROR: Please select a passenger"} ], true);
             } else {
                 contract.checkPayoutBalance(passenger, (error, result) => {
-                    let msg = "Check Payout, Passenger " + passengerDesc + " has " + result + " payout balance";
+                    let msg = "Check Payout, Passenger " + passengerDesc + " has " + (result/WEI_MULTIPLE) + " ETH payout balance";
                     if (error)
                         display('', '', [ { label: msg, error: error} ], true);
                     else 
@@ -594,12 +591,20 @@ var BigNumber = require('bignumber.js');
             if (passenger === "-1") {
                 display('', '', [ { label: 'Check Payout ', error: "ERROR: Please select a passenger"} ], true);
             } else {
-                contract.withdrawPayoutBalance(passenger, (error, result) => {
-                    let msg = "Withdraw Payout, Passenger " + passengerDesc;
-                    if (error)
-                        display('', '', [ { label: msg, error: error} ], true);
-                    else 
-                        display('', '', [ { label: msg, value: "Successful!"} ], true);
+                contract.checkPayoutBalance(passenger, (error, result1) => {
+                    let ethPayout = result1/WEI_MULTIPLE;
+                    let msg1 = "Check Payout, Passenger " + passengerDesc + " has " + ethPayout + " ETH payout balance";
+                    if (error) {
+                        display('', '', [ { label: msg1, error: error} ], true);
+                    } else { 
+                        contract.withdrawPayoutBalance(passenger, (error, result2) => {
+                            let msg = "Withdraw Payout, Passenger " + passengerDesc + " withdrawn " + ethPayout + " ETH";
+                            if (error)
+                                display('', '', [ { label: msg, error: error} ], true);
+                            else 
+                                display('', '', [ { label: msg, value: "Successful!"} ], true);
+                        });
+                    }
                 });
             }
         });
@@ -609,9 +614,9 @@ var BigNumber = require('bignumber.js');
         //**********************
 
         // Airline > Vote: Applicant Airlines
-        $("#vote-applicant-airlines").change(function() {
-            let applicantAirline = this.value;
-            refreshRegisteredAirlineHasNotVotedList(applicantAirline);
+        $("#av-airlines").change(function() {
+            let airline = this.value;
+            refreshRegisteredAirlineHasNotVotedList(airline);
         });
 
         // Passenger > Buy: Flight List
