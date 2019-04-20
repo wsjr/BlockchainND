@@ -17,9 +17,12 @@ Ensure ganache generates atleast 50 accounts and uses the Mnemonic below:
 
 `thought family poverty reunion salad van bacon combine expect level ozone discover`
 
+
 ![ganache accounts](images/ganache-accounts.png)
 
-Enure it runs on port 8545
+
+Ensure it runs on port 8545
+
 
 ![ganache server](images/ganache-server.png)
 
