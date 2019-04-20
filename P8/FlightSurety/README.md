@@ -68,6 +68,7 @@ the 1st airline is funded and registered automatically.
 
 ![register info](images/airline-info.png)
 
+
 ***Register tab***
 
 Airlines 2-4 once registered it will be funded and registered right away.
@@ -78,6 +79,7 @@ Subsequent airlines once registered by a registered airline will need to get eno
 
 ![airline register2](images/airline-register-2.png)
 
+
 ***Vote tab***
 
 Select an airline and registered airline as such:
@@ -85,11 +87,13 @@ Only registered airlines that haven't voted will display in the dropdown.
 
 ![airline vote](images/airline-vote.png)
 
+
 ***Fund tab***
 
 Select an airline which needs to be funded. Once funded, it will be considered registered.
 
 ![airline fund](images/airline-fund.png)
+
 
 ##### Flight
 -----
@@ -102,6 +106,7 @@ In the Flight section, you can:
 Select a registered airline and supply the flight name as such:
 
 ![flight register](images/flight-register.png)
+
 
 ***Simulate Tab***
 
@@ -123,15 +128,18 @@ In addition to passenger info and amount to purchase, you need to supply the par
 
 ![passenger buy insurance](images/passenger-buy-insurance.png)
 
+
 ***Payout out***
 
 Here you can check the payout for passenger who bought insurance and had a delayed flight by clicking the **Check Payout** button.
 
 ![passenger check payout](images/passenger-check-payout.png)
 
+
 Withdrawing payout is done via **Withdraw Payout** button.
 
 ![passenger withdraw payout](images/passenger-withdraw-payout.png)
+
 
 ## Deploy
 
