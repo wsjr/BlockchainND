@@ -3,7 +3,6 @@
 Real Estate Marketplace is the Capstone for the Udacity Blockchain Course. In this project, we created a custom ERC721Token in which we mint and deply to [OpenSea](https://opensea.io/). It uses [Zokrates](https://github.com/Zokrates/ZoKrates) to verify the uniqueness of the token.
 
 ## Installation
-------
 
 - Run default install
 ```
@@ -17,7 +16,6 @@ npm install truffle-hdwallet-provider
 
 
 ## Tests
-------
 
 In ***eth-contract*** directory, you can do either:
 
@@ -35,13 +33,12 @@ In ***eth-contract*** directory, you can do either:
 
 
 ## Deployment
-------
 
-#### Collect information
+### Collect information
 1. You'll need to sign up for [Infura](https://infura.io/), create a new project. and get an API key.
 2. Get the mnemonic 12-word phrase from your Metamask wallet (make sure you're using a Metamask seed phrase that you're comfortable using for testing purposes).
 
-#### Configure truffle-config.js
+### Configure truffle-config.js
 1. Create a ```.secret``` file in the same directory as truffle.config. Paste your metamask mnemonic 12-word phrase.
 2. Uncomment this whole block of code.
 ```
@@ -55,7 +52,7 @@ const mnemonic = fs.readFileSync(".secret").toString().trim();
 4. Uncomment the network section for ***rinkeby***.
 5. Provide your metamask account number in the ***<your contract owner address>*** section.
 
-#### Deploying to the Rinkeby Network
+### Deploying to the Rinkeby Network
 1. Using your Infura API key and the mnemonic for your Metamask wallet (make sure you're using a Metamask seed phrase that you're comfortable using for testing purposes), run:
 
 ```
@@ -63,7 +60,7 @@ export INFURA_KEY="<infura_key>"
 export MNEMONIC="<metmask_mnemonic>"
 truffle deploy --network rinkeby
 ```
-#### Minting tokens
+### Minting tokens
 Once the contract has been deployed to the rinkeby network, collect the contract address and use it in **<contract_address>**. Then in your metamask, collect your metamask account and use it in **<my_address>** before running the minting script.
 
 ```
@@ -75,7 +72,6 @@ node scripts/mint.js
 
 
 ## Project Resources
-------
 
 
 * [Remix - Solidity IDE](https://remix.ethereum.org/)
