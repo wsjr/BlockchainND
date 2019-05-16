@@ -1,9 +1,10 @@
 # Udacity Blockchain Capstone: Real Estate Marketplace
 
-Real Estate Marketplace is the Capstone for the Udacity Blockchain Course. In this project, we created an custom ERC721Token in which we mint and deply to Open Seas. It uses Zokrates to verify the uniqueness of the token.
+Real Estate Marketplace is the Capstone for the Udacity Blockchain Course. In this project, we created a custom ERC721Token in which we mint and deply to [OpenSea](https://opensea.io/). It uses [Zokrates](https://github.com/Zokrates/ZoKrates) to verify the uniqueness of the token.
 
 ## Installation
----
+------
+
 - Run default install
 ```
 npm install
@@ -16,19 +17,26 @@ npm install truffle-hdwallet-provider
 
 
 ## Tests
----
+------
+
 In ***eth-contract*** directory, you can do either:
 
 * Run the whole test suite: 
+
 ```truffle test```
 
 * Run individual tests:
+
 ```truffle test test/TestERC721Mintable.js```
+
 ```truffle test test/TestSquareVerifier.js```
+
 ```truffle test test/TestSolnSquareVerifier.js```
 
+
 ## Deployment
----
+------
+
 #### Collect information
 1. You'll need to sign up for [Infura](https://infura.io/), create a new project. and get an API key.
 2. Get the mnemonic 12-word phrase from your Metamask wallet (make sure you're using a Metamask seed phrase that you're comfortable using for testing purposes).
@@ -67,7 +75,7 @@ node scripts/mint.js
 
 
 ## Project Resources
----
+------
 
 
 * [Remix - Solidity IDE](https://remix.ethereum.org/)
