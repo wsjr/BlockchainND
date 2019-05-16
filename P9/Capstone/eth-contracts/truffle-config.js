@@ -58,18 +58,23 @@ module.exports = {
       // websockets: true        // Enable EventEmitter interface for web3 (default: false)
     // },
 
+    // rinkeby: {
+    //   provider: function() {
+    //     return new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${infuraKey}`)
+    //   },
+    //   from: '0xE5DE8B35997108f7553771C335349873F3bACb51',
+    //   network_id: '4',
+    //   gas: 4500000,
+    //   gasPrice: 10000000000,
+    // },
+
     rinkeby: {
-      //provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${infuraKey}`),
       provider: function() {
         return new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${infuraKey}`)
-        //return new HDWalletProvider("<your metamask seed>", "https://rinkeby.infura.io/v3/<your infura key>")
       },
-      from: '0xE5DE8B35997108f7553771C335349873F3bACb51',
-      //from: '<your contract owner address>',
-      network_id: '4',
-      gas: 4500000,
-      gasPrice: 10000000000,
-    }
+      network_id: 4,
+      skipDryRun: true
+    },
 
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
