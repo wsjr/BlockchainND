@@ -30735,7 +30735,7 @@
     }
   },
   "schemaVersion": "3.0.9",
-  "updatedAt": "2019-05-15T05:22:30.655Z",
+  "updatedAt": "2019-05-16T05:44:02.836Z",
   "devdoc": {
     "methods": {
       "isApprovedForAll(address,address)": {
