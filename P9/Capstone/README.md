@@ -2,6 +2,7 @@
 
 Real Estate Marketplace is the Capstone for the Udacity Blockchain Course. In this project, we created a custom ERC721Token in which we mint and deply to [OpenSea](https://opensea.io/). It uses [Zokrates](https://github.com/Zokrates/ZoKrates) to verify the uniqueness of the token.
 
+
 ## Installation
 
 - Run default install
@@ -142,6 +143,12 @@ In our case, we have minted 10 token to the owner address using the mint script 
 Thus, we are left with 5 tokens:
 
 ![test remaining assets](images/remaining-assets.png)
+
+### Important Info
+
+Store Front: https://rinkeby.opensea.io/accounts/0xe5de8b35997108f7553771c335349873f3bacb51/realestatetokenv3
+Contract Address: 0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6
+Contract ABI: [JSON](data/contract-abi.json)
 
 ## Project Resources
 
