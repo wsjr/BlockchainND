@@ -69,75 +69,73 @@ export INFURA_KEY="<infura_key>"
 export MNEMONIC="<metmask_mnemonic>"
 truffle deploy --network rinkeby
 ```
-### Minting tokens
 
-There are two ways to mint the token:
+### Minting tokens - Option 1
 
-1. Go to [MEW](https://www.myetherwallet.com). Just provide the contract address and the ABI and you can start minting tokens;
+Go to [MEW](https://www.myetherwallet.com). Just provide the contract address and the ABI and you can start minting tokens by selecting mint method. See Important Info section for the contract addresss and ABI.
 
+### Minting tokens - Option 2
 
-2. Thru the minting script:
+1. Generate the necessary proof.json files you need by doing the following:
 
-  1. Generate the necessary proof.json files you need by doing the following:
+- Run Docker container:
+```
+docker run -v /Users/wenjo2/Dev/Udacity/BCND/P9/Capstone/zokrates/code:/home/zokrates/code -ti zokrates/zokrates /bin/bash
+```
 
-    - Run Docker container:
-    ```
-    docker run -v /Users/wenjo2/Dev/Udacity/BCND/P9/Capstone/zokrates/code:/home/zokrates/code -ti zokrates/zokrates /bin/bash
-    ```
+- Navigate to the square directory:
+```
+cd code/square
+```
 
-    - Navigate to the square directory:
-    ```
-    cd code/square
-    ```
+- Compile Program
+```
+~/zokrates compile -i square.code
+```
 
-    - Compile Program
-    ```
-    ~/zokrates compile -i square.code
-    ```
+- Trusted Setup
+```
+~/zokrates setup --proving-scheme pghr13
+```
 
-    - Trusted Setup
-    ```
-    ~/zokrates setup --proving-scheme pghr13
-    ```
+- Compute Witness
+```
+~/zokrates compute-witness -a 3 9
+```
 
-    - Compute Witness
-    ```
-    ~/zokrates compute-witness -a 3 9
-    ```
+- Generate Proof
+```
+~/zokrates generate-proof --proving-scheme pghr13
+```
 
-    - Generate Proof
-    ```
-    ~/zokrates generate-proof --proving-scheme pghr13
-    ```
+- Export Verifier
+```
+~/zokrates export-verifier --proving-scheme pghr13
+```
 
-    - Export Verifier
-    ```
-    ~/zokrates export-verifier --proving-scheme pghr13
-    ```
+2. Move the proofs json in the ***data*** directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
 
-  2. Move the proofs json in the ***data*** directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
+3. Deploy the contract to rinkeby:
 
-  3. Deploy the contract to rinkeby:
+```
+truffle migrate --reset --network rinkeby
+```
 
-    ```
-    truffle migrate --reset --network rinkeby
-    ```
+4. Here are the contracts in the rinkeby network:
 
-  4. Here are the contracts in the rinkeby network:
+- [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
 
-    - [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
-
-    - [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
+- [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
 
 
-  5. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in **<contract_address>**. Then in your metamask, collect your metamask account and use it in **<my_address>** before running the minting script.
+5. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in **<contract_address>**. Then in your metamask, collect your metamask account and use it in **<my_address>** before running the minting script.
 
-    ```
-    export OWNER_ADDRESS="<my_address>"
-    export CONTRACT_ADDRESS="<contract_address>"
-    export NETWORK="rinkeby"
-    node scripts/mint.js
-    ```
+```
+export OWNER_ADDRESS="<my_address>"
+export CONTRACT_ADDRESS="<contract_address>"
+export NETWORK="rinkeby"
+node scripts/mint.js
+```
 
 ### Listing on OpenSea
 
