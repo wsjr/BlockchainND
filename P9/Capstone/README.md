@@ -57,7 +57,7 @@ const infuraKey = "<infura key>";
 const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret").toString().trim();
 ```
-3. Replace ***<infura key>*** with your real infura key.
+3. Replace *** <infura key> *** with your real infura key.
 4. Uncomment the network section for ***rinkeby***.
 5. Provide your metamask account number in the ***<your contract owner address>*** section.
 
@@ -118,6 +118,7 @@ truffle migrate --reset --network rinkeby
 Here are the contracts in the rinkeby network:
 
 [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
+
 [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
 
 
@@ -132,9 +133,14 @@ node scripts/mint.js
 
 ### Listing on OpenSea
 
+Once the tokens are already assigned to an owner, the owner can list/sell tokens on the [OpenSea](https://opensea.io/). In order to list a property, you'll need to go to the item on your account page. On the item detail page, click **"Sell"**. This will walk you through the steps for selling an item. Note that the first time you auction an item, you will need to complete several MetaMask transactions in order to give the exchange contracts access to your items. After you complete these initial steps, creating an auction will only require signing a MetaMask message. This means that you can auction items without paying gas.
 
+In our case, we have minted 10 token to the owner address using the mint script in section 4. Then, we listed 10 tokens on [OpenSea](https://opensea.io/). Sold 5 tokens to different account addresses as seen below:
 
 ![test remaining assets](images/remaining-assets.png)
+
+Thus, we are left with 5 tokens:
+
 ![test sold assets](images/sold-assets.png)
 
 ## Project Resources
