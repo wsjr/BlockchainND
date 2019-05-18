@@ -57,9 +57,9 @@ const infuraKey = "<infura key>";
 const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret").toString().trim();
 ```
-3. Replace ** <infura key> ** with your real infura key.
+3. Replace ** <infura_key> ** with your real infura key.
 4. Uncomment the network section for ***rinkeby***.
-5. Provide your metamask account number in the ** <your contract owner address> ** section.
+5. Provide your metamask account number in the ** <your_contract_owner_address> ** section.
 
 ### Deploying to the Rinkeby Network
 1. Using your Infura API key and the mnemonic for your Metamask wallet (make sure you're using a Metamask seed phrase that you're comfortable using for testing purposes), run:
@@ -122,7 +122,7 @@ truffle migrate --reset --network rinkeby
 - [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
 
 
-4. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in ** <contract_address> **. Then in your metamask, collect your metamask account and use it in ** <my_address> ** before running the minting script.
+5. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in ** <contract_address> **. Then in your metamask, collect your metamask account and use it in ** <my_address> ** before running the minting script.
 
 ```
 export OWNER_ADDRESS="<my_address>"
