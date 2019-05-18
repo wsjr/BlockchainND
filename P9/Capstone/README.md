@@ -23,13 +23,21 @@ In ***eth-contract*** directory, you can do either:
 
 ```truffle test```
 
+![test all](images/test-all.png)
+
 * Run individual tests:
 
 ```truffle test test/TestERC721Mintable.js```
 
+![test erc721mintable](images/test-erc721mintable.png)
+
 ```truffle test test/TestSquareVerifier.js```
 
+![test squareverifier](images/test-squareverifier.png)
+
 ```truffle test test/TestSolnSquareVerifier.js```
+
+![test solnsquareverifier](images/test-solnsquareverifier.png)
 
 
 ## Deployment
