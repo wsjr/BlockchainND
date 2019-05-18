@@ -147,7 +147,9 @@ Thus, we are left with 5 tokens:
 ### Important Info
 
 Store Front: https://rinkeby.opensea.io/accounts/0xe5de8b35997108f7553771c335349873f3bacb51/realestatetokenv3
+
 Contract Address: 0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6
+
 Contract ABI: [JSON](data/contract-abi.json)
 
 ## Project Resources
