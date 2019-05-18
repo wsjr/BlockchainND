@@ -72,7 +72,7 @@ truffle deploy --network rinkeby
 
 ### Minting tokens - Option 1
 
-Go to [MEW](https://www.myetherwallet.com). Just provide the contract address and the ABI and you can start minting tokens by selecting mint method. See Important Info section for the contract addresss and ABI.
+Go to [MEW](https://www.myetherwallet.com). Just provide the contract address and the ABI and you can start minting tokens by selecting mint method. See **Important Info** section for the contract addresss and ABI.
 
 ### Minting tokens - Option 2
 
