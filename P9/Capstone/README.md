@@ -137,11 +137,12 @@ Once the tokens are already assigned to an owner, the owner can list/sell tokens
 
 In our case, we have minted 10 token to the owner address using the mint script in section 4. Then, we listed 10 tokens on [OpenSea](https://opensea.io/). Sold 5 tokens to different account addresses as seen below:
 
-![test remaining assets](images/remaining-assets.png)
+![test sold assets](images/sold-assets.png)
+
 
 Thus, we are left with 5 tokens:
 
-![test sold assets](images/sold-assets.png)
+![test remaining assets](images/remaining-assets.png)
 
 ## Project Resources
 
