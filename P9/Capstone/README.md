@@ -57,9 +57,8 @@ const infuraKey = "<infura key>";
 const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret").toString().trim();
 ```
-3. Replace ** <infura_key> ** with your real infura key.
+3. Replace **<infura_key>** with your real infura key.
 4. Uncomment the network section for ***rinkeby***.
-5. Provide your metamask account number in the ** <your_contract_owner_address> ** section.
 
 ### Deploying to the Rinkeby Network
 1. Using your Infura API key and the mnemonic for your Metamask wallet (make sure you're using a Metamask seed phrase that you're comfortable using for testing purposes), run:
