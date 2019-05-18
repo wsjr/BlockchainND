@@ -72,7 +72,7 @@ truffle deploy --network rinkeby
 ### Minting tokens
 1. Generate the necessary proof.json files you need by doing the following:
 
-- Run Docker container:
+>- Run Docker container:
 ```
 docker run -v /Users/wenjo2/Dev/Udacity/BCND/P9/Capstone/zokrates/code:/home/zokrates/code -ti zokrates/zokrates /bin/bash
 ```
@@ -117,7 +117,7 @@ truffle migrate --reset --network rinkeby
 
 4. Here are the contracts in the rinkeby network:
 
-- [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
+>- [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
 
 - [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
 
