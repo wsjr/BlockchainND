@@ -26,7 +26,7 @@ In ***eth-contract*** directory, you can do either:
 
 ![test all](images/test-all.png)
 
-* Run individual tests:
+* Or Run individual tests:
 
 ```truffle test test/TestERC721Mintable.js```
 
@@ -107,7 +107,7 @@ cd code/square
 ~/zokrates export-verifier --proving-scheme pghr13
 ```
 
-2. Move the proofs json in the data/ directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
+2. Move the proofs json in the ***data*** directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
 
 3. Deploy the contract to rinkeby:
 
