@@ -14,6 +14,7 @@ npm install
 npm install truffle-hdwallet-provider
 ```
 
+- Install [Docker](https://docs.docker.com/install/), if missing. 
 
 ## Tests
 
@@ -69,7 +70,58 @@ export MNEMONIC="<metmask_mnemonic>"
 truffle deploy --network rinkeby
 ```
 ### Minting tokens
-Once the contract has been deployed to the rinkeby network, collect the contract address and use it in **<contract_address>**. Then in your metamask, collect your metamask account and use it in **<my_address>** before running the minting script.
+1. Generate the necessary proof.json files you need by doing the following:
+
+- Run Docker container:
+```
+docker run -v /Users/wenjo2/Dev/Udacity/BCND/P9/Capstone/zokrates/code:/home/zokrates/code -ti zokrates/zokrates /bin/bash
+```
+
+- Navigate to the square directory:
+```
+cd code/square
+```
+
+- Compile Program
+```
+~/zokrates compile -i square.code
+```
+
+- Trusted Setup
+```
+~/zokrates setup --proving-scheme pghr13
+```
+
+- Compute Witness
+```
+~/zokrates compute-witness -a 3 9
+```
+
+- Generate Proof
+```
+~/zokrates generate-proof --proving-scheme pghr13
+```
+
+- Export Verifier
+```
+~/zokrates export-verifier --proving-scheme pghr13
+```
+
+2. Move the proofs json in the data/ directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
+
+3. Deploy the contract to rinkeby:
+
+```
+truffle migrate --reset --network rinkeby
+```
+
+Here are the contracts in the rinkeby network:
+
+[SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
+[SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
+
+
+4. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in ** <contract_address> **. Then in your metamask, collect your metamask account and use it in ** <my_address> ** before running the minting script.
 
 ```
 export OWNER_ADDRESS="<my_address>"
@@ -78,6 +130,12 @@ export NETWORK="rinkeby"
 node scripts/mint.js
 ```
 
+### Listing on OpenSea
+
+
+
+![test remaining assets](images/remaining-assets.png)
+![test sold assets](images/sold-assets.png)
 
 ## Project Resources
 
@@ -90,3 +148,4 @@ node scripts/mint.js
 * [Interactive zero knowledge 3-colorability demonstration](http://web.mit.edu/~ezyang/Public/graph/svg.html)
 * [Docker](https://docs.docker.com/install/)
 * [ZoKrates](https://github.com/Zokrates/ZoKrates)
+* [OpenSea](https://opensea.io/)
