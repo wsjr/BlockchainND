@@ -70,66 +70,74 @@ export MNEMONIC="<metmask_mnemonic>"
 truffle deploy --network rinkeby
 ```
 ### Minting tokens
-1. Generate the necessary proof.json files you need by doing the following:
 
-- Run Docker container:
-```
-docker run -v /Users/wenjo2/Dev/Udacity/BCND/P9/Capstone/zokrates/code:/home/zokrates/code -ti zokrates/zokrates /bin/bash
-```
+There are two ways to mint the token:
 
-- Navigate to the square directory:
-```
-cd code/square
-```
-
-- Compile Program
-```
-~/zokrates compile -i square.code
-```
-
-- Trusted Setup
-```
-~/zokrates setup --proving-scheme pghr13
-```
-
-- Compute Witness
-```
-~/zokrates compute-witness -a 3 9
-```
-
-- Generate Proof
-```
-~/zokrates generate-proof --proving-scheme pghr13
-```
-
-- Export Verifier
-```
-~/zokrates export-verifier --proving-scheme pghr13
-```
-
-2. Move the proofs json in the ***data*** directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
-
-3. Deploy the contract to rinkeby:
-
-```
-truffle migrate --reset --network rinkeby
-```
-
-4. Here are the contracts in the rinkeby network:
-
-- [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
-
-- [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
+1. Go to [MEW](https://www.myetherwallet.com). Just provide the contract address and the ABI and you can start minting tokens;
 
 
-5. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in **<contract_address>**. Then in your metamask, collect your metamask account and use it in **<my_address>** before running the minting script.
+2. Thru the minting script:
 
-```
-export OWNER_ADDRESS="<my_address>"
-export CONTRACT_ADDRESS="<contract_address>"
-export NETWORK="rinkeby"
-node scripts/mint.js
-```
+  1. Generate the necessary proof.json files you need by doing the following:
+
+    - Run Docker container:
+    ```
+    docker run -v /Users/wenjo2/Dev/Udacity/BCND/P9/Capstone/zokrates/code:/home/zokrates/code -ti zokrates/zokrates /bin/bash
+    ```
+
+    - Navigate to the square directory:
+    ```
+    cd code/square
+    ```
+
+    - Compile Program
+    ```
+    ~/zokrates compile -i square.code
+    ```
+
+    - Trusted Setup
+    ```
+    ~/zokrates setup --proving-scheme pghr13
+    ```
+
+    - Compute Witness
+    ```
+    ~/zokrates compute-witness -a 3 9
+    ```
+
+    - Generate Proof
+    ```
+    ~/zokrates generate-proof --proving-scheme pghr13
+    ```
+
+    - Export Verifier
+    ```
+    ~/zokrates export-verifier --proving-scheme pghr13
+    ```
+
+  2. Move the proofs json in the ***data*** directory and make sure its suffixed with "-(index)". For instance, proof-1.json, proof-2.json, etc.
+
+  3. Deploy the contract to rinkeby:
+
+    ```
+    truffle migrate --reset --network rinkeby
+    ```
+
+  4. Here are the contracts in the rinkeby network:
+
+    - [SquareVerifer](https://rinkeby.etherscan.io/address/0x755210c2696e0e69e76df7bc88f0ddce268a06ac)
+
+    - [SolnSquareVerifier](https://rinkeby.etherscan.io/address/0xb25377d851fda8ebb73c6b87a3bca3aa6f2a44a6)
+
+
+  5. Once the contract has been deployed to the rinkeby network, collect the contract address and use it in **<contract_address>**. Then in your metamask, collect your metamask account and use it in **<my_address>** before running the minting script.
+
+    ```
+    export OWNER_ADDRESS="<my_address>"
+    export CONTRACT_ADDRESS="<contract_address>"
+    export NETWORK="rinkeby"
+    node scripts/mint.js
+    ```
 
 ### Listing on OpenSea
 
